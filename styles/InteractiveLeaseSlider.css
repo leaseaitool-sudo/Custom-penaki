@@ -1,0 +1,25 @@
+
+.lease-slider-after-image {
+    clip-path: var(--clip-path);
+}
+
+.lease-slider-handle {
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+@media (min-width: 640px) {
+    .lease-slider-handle {
+        left: var(--slider-offset);
+        right: auto;
+    }
+}
+
+@media (max-width: 639px) {
+    .lease-slider-handle {
+        top: var(--slider-offset);
+        bottom: auto;
+    }
+}

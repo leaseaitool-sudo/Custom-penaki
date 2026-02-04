@@ -1,0 +1,213 @@
+
+
+
+
+
+.gradient-text-header {
+    background-size: 200% 200%;
+}
+
+.value-card-bar-manual {
+    width: 95%;
+}
+
+.value-card-bar-ai {
+    width: 30%;
+}
+
+.step-line {
+    transform-origin: top;
+}
+
+/* Modern Enhancements */
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, rgba(226, 232, 240, 0.5) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(226, 232, 240, 0.5) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 20px 0 rgba(31, 38, 135, 0.05);
+}
+
+.hero-blob {
+  position: absolute;
+  filter: blur(80px);
+  z-index: 0;
+  opacity: 0.3; /* Subtle opacity */
+  animation: blob-bounce 10s infinite ease-in-out alternate;
+}
+
+@keyframes blob-bounce {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(15px, -15px) scale(1.05); }
+}
+
+.hover-card-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.hover-card-lift:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1), 0 10px 20px -5px rgba(0, 0, 0, 0.04);
+}
+
+.floating-cta {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 50;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.floating-cta.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent);
+  transform: skewX(-20deg);
+  animation: shimmer-anim 4s infinite;
+}
+
+@keyframes shimmer-anim {
+  0% { left: -100%; }
+  15% { left: 200%; }
+  100% { left: 200%; }
+}
+
+/* Metric Card Styles */
+.metric-card {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: #0ea5e9; /* Sky 500 */
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px -5px rgba(14, 165, 233, 0.15);
+}
+
+.metric-value-gradient {
+    background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+
+/* Interactive Process Animations */
+
+/* Step 1: Upload */
+.anim-upload-file {
+    animation: uploadFileMove 2s infinite ease-in-out;
+}
+@keyframes uploadFileMove {
+    0% { transform: translateY(-20px); opacity: 0; }
+    20% { opacity: 1; }
+    80% { transform: translateY(20px); opacity: 1; }
+    100% { transform: translateY(30px); opacity: 0; }
+}
+.anim-upload-zone {
+    animation: uploadZonePulse 2s infinite ease-in-out;
+}
+@keyframes uploadZonePulse {
+    0%, 100% { transform: scale(1); border-color: #cbd5e1; background-color: #f8fafc; }
+    50% { transform: scale(1.02); border-color: #0284C7; background-color: #e0f2fe; }
+}
+
+/* Step 2: Scan */
+.anim-scan-bar {
+    animation: scanMove 2s linear infinite;
+    background: linear-gradient(to bottom, rgba(2, 132, 199, 0) 0%, rgba(2, 132, 199, 0.5) 50%, rgba(2, 132, 199, 0) 100%);
+}
+@keyframes scanMove {
+    0% { top: -20%; }
+    100% { top: 120%; }
+}
+.anim-text-line {
+    animation: textFadeIn 0.5s forwards;
+    opacity: 0.3;
+}
+@keyframes textFadeIn {
+    to { opacity: 1; background-color: #e0f2fe; }
+}
+
+/* Step 3: Verify */
+.anim-check-pop {
+    animation: checkPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    opacity: 0;
+    transform: scale(0);
+}
+@keyframes checkPop {
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Step 4: Export */
+.anim-row-slide {
+    animation: rowSlideIn 0.5s ease-out forwards;
+    opacity: 0;
+    transform: translateX(-20px);
+}
+@keyframes rowSlideIn {
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Visualizer Specific */
+.perspective-1000 {
+    perspective: 1000px;
+}
+.rotate-y-6 {
+    transform: rotateY(-6deg);
+}
+.hover\:rotate-y-0:hover {
+    transform: rotateY(0deg);
+}
+.animate-float-slow {
+    animation: float 6s ease-in-out infinite;
+}
+.animate-dash-flow {
+    stroke-dashoffset: 200;
+    animation: dashFlow 3s linear infinite;
+}
+@keyframes dashFlow {
+    to { stroke-dashoffset: 0; }
+}
+
+/* New Impact Section Animations */
+@keyframes pulse-slow {
+    0%, 100% { transform: scale(1); opacity: 1; border-color: rgba(2, 132, 199, 0.3); }
+    50% { transform: scale(1.05); opacity: 0.8; border-color: rgba(2, 132, 199, 0.6); }
+}
+.animate-pulse-slow {
+    animation: pulse-slow 4s infinite ease-in-out;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}

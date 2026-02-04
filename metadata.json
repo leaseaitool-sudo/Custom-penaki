@@ -1,0 +1,5 @@
+{
+  "name": "Penaki",
+  "description": "A web application for clients to upload lease PDFs, have them processed by AI, and view the abstracted results. This interface allows for file submission and tracking the status of lease processing.",
+  "requestFramePermissions": []
+}

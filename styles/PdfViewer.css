@@ -1,0 +1,175 @@
+
+.pdf-viewer-root .pdf-page-container {
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: white;
+  transition: min-height 0.3s ease;
+}
+
+/* Specific to ViewSubmissionModal to match original injected styles */
+.pdf-viewer-root.modal-viewer .pdf-page-container {
+  margin-bottom: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Pipeline Visibility States */
+.pdf-viewer-root .pdf-page-container canvas,
+.pdf-viewer-root .pdf-page-container .textLayer,
+.pdf-viewer-root .pdf-page-container .highlightLayer {
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+}
+
+.pdf-viewer-root .pdf-page-container.page-ready canvas,
+.pdf-viewer-root .pdf-page-container.page-ready .textLayer,
+.pdf-viewer-root .pdf-page-container.page-ready .highlightLayer {
+  opacity: 1;
+}
+
+.pdf-viewer-root .highlightLayer { 
+  position: absolute; 
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%; 
+  pointer-events: none; 
+  z-index: 3; 
+}
+
+/* Search Highlights (Green) - Higher Z to show on top of snippets */
+.pdf-viewer-root .highlight.search-highlight { 
+  position: absolute; 
+  background-color: rgba(34, 197, 94, 0.4); 
+  border: 1px solid #16a34a; 
+  border-radius: 2px; 
+  z-index: 60; 
+  cursor: pointer;
+  pointer-events: auto;
+}
+.pdf-viewer-root .highlight.search-highlight.active {
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+    background-color: rgba(34, 197, 94, 0.7);
+    z-index: 61;
+}
+
+.pdf-viewer-root .auto-highlight { 
+  background-color: rgba(255, 255, 0, 0.25); 
+  border: 1px solid rgba(255, 255, 0, 0.5); 
+}
+
+/* Overlay - Visible by default, hidden when ready */
+.pdf-viewer-root .ocr-overlay { 
+  position: absolute; 
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%; 
+  background: rgba(255,255,255,0.9); 
+  color: #334155; 
+  display: flex; 
+  flex-direction: column;
+  gap: 12px;
+  align-items: center; 
+  justify-content: center; 
+  font-size: 0.9rem; 
+  font-weight: 600; 
+  z-index: 50; 
+  pointer-events: none; 
+  opacity: 1; 
+  transition: opacity 0.4s ease-out;
+  backdrop-filter: blur(2px);
+}
+
+.pdf-viewer-root .pdf-page-container.page-ready .ocr-overlay { 
+  opacity: 0; 
+  pointer-events: none;
+}
+
+.pdf-viewer-root .textLayer { 
+  position: absolute; 
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%; 
+  z-index: 4; 
+  opacity: 1; 
+  pointer-events: none; 
+}
+
+/* Invisible text styling for production behavior */
+.pdf-viewer-root .text-word { 
+  color: transparent;
+  cursor: text; 
+  pointer-events: auto;
+  white-space: pre;
+  line-height: 1;
+  transform-origin: 0% 0%;
+}
+
+/* Optional: Slight hover effect to aid precise selection in Workbench mode */
+.pdf-viewer-root .text-word:hover { 
+  background-color: rgba(59, 130, 246, 0.1); 
+}
+
+/* Selection Start Marker (Workbench) */
+.pdf-viewer-root .text-word.selection-start-marker { 
+  background-color: rgba(34, 197, 94, 0.2); 
+  outline: 1px solid rgba(34, 197, 94, 0.5); 
+}
+
+.pdf-viewer-root .text-space { pointer-events: none; }
+
+.pdf-viewer-root ::selection { background: rgba(59, 130, 246, 0.3); } 
+
+.pdf-viewer-root .accordion-header { 
+  padding: 12px 16px; 
+  background-color: #f1f5f9; 
+  border: 1px solid #e2e8f0; 
+  cursor: pointer; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  font-weight: 600; 
+  color: #334155;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  user-select: none;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+.pdf-viewer-root .accordion-header:hover { background-color: #e2e8f0; }
+.pdf-viewer-root .accordion-content { margin-bottom: 16px; width: 100%; }
+.pdf-viewer-root .accordion-content.hidden { display: none; }
+
+/* --- Production Workbench Snippet Highlights --- */
+.pdf-viewer-root .snippet-highlight {
+  /* Default Yellow: Light, non-intrusive */
+  background-color: rgba(253, 224, 71, 0.35);
+  border: 1px solid rgba(250, 204, 21, 0.2); 
+  position: absolute;
+  /* Z-index below text selection (4) but above canvas */
+  z-index: 2; 
+  border-radius: 2px;
+  /* Allow clicking but do not block scrolling if missed */
+  pointer-events: auto; 
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pdf-viewer-root .snippet-highlight:hover {
+  background-color: rgba(253, 224, 71, 0.6);
+  border-color: rgba(234, 179, 8, 0.6);
+  z-index: 10;
+}
+
+.pdf-viewer-root .snippet-highlight.active {
+  /* Active Orange: Clear visual distinction */
+  background-color: rgba(249, 115, 22, 0.5) !important;
+  border: 2px solid rgba(249, 115, 22, 1) !important;
+  /* Bring to front */
+  z-index: 20; 
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.5);
+}
