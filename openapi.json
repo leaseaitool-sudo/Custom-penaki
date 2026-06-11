@@ -1,0 +1,1402 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "",
+    "title": "standard public schema",
+    "version": "14.1"
+  },
+  "host": "bvtwahspteslrwcltsfy.supabase.co:443",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json",
+    "application/vnd.pgrst.object+json;nulls=stripped",
+    "application/vnd.pgrst.object+json",
+    "text/csv"
+  ],
+  "produces": [
+    "application/json",
+    "application/vnd.pgrst.object+json;nulls=stripped",
+    "application/vnd.pgrst.object+json",
+    "text/csv"
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "produces": [
+          "application/openapi+json",
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "OpenAPI description (this document)",
+        "tags": [
+          "Introspection"
+        ]
+      }
+    },
+    "/profiles": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.profiles.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.username"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.daily_capacity"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.daily_goal"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/profiles"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.profiles"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.profiles.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.username"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.daily_capacity"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.daily_goal"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.profiles.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.username"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.daily_capacity"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.daily_goal"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.profiles"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/leases": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.leases.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leases.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leases.client_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leases.processing_status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leases.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/leases"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "leases"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.leases"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "leases"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.leases.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leases.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leases.client_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leases.processing_status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leases.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "leases"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.leases.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leases.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leases.client_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leases.processing_status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.leases.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.leases"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "leases"
+        ]
+      }
+    },
+    "/document_text_cache": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.document_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.page_number"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.text_items"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.extraction_method"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/document_text_cache"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "document_text_cache"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.document_text_cache"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "document_text_cache"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.document_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.page_number"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.text_items"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.extraction_method"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "document_text_cache"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.document_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.page_number"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.text_items"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.extraction_method"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.document_text_cache.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.document_text_cache"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "document_text_cache"
+        ]
+      }
+    },
+    "/saved_templates": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.sections"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/saved_templates"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "saved_templates"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.saved_templates"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "saved_templates"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.sections"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "saved_templates"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.sections"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.saved_templates.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.saved_templates"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "saved_templates"
+        ]
+      }
+    },
+    "/lease_documents": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.lease_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.storage_path"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.file_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.file_size"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.page_count"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/lease_documents"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "lease_documents"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.lease_documents"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "lease_documents"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.lease_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.storage_path"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.file_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.file_size"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.page_count"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "lease_documents"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.lease_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.storage_path"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.file_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.file_size"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.page_count"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.lease_documents.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.lease_documents"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "lease_documents"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "profiles": {
+      "required": [
+        "id",
+        "username",
+        "email",
+        "role"
+      ],
+      "properties": {
+        "id": {
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "username": {
+          "default": "",
+          "format": "text",
+          "type": "string"
+        },
+        "email": {
+          "default": "",
+          "format": "text",
+          "type": "string"
+        },
+        "role": {
+          "default": "user",
+          "format": "text",
+          "type": "string"
+        },
+        "daily_capacity": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "daily_goal": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "leases": {
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "format": "text",
+          "type": "string"
+        },
+        "client_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "processing_status": {
+          "default": "uploaded",
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "document_text_cache": {
+      "required": [
+        "id",
+        "document_id",
+        "page_number",
+        "text_items",
+        "extraction_method"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "document_id": {
+          "description": "Note:\nThis is a Foreign Key to `lease_documents.id`.<fk table='lease_documents' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "page_number": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "text_items": {
+          "format": "jsonb"
+        },
+        "extraction_method": {
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "saved_templates": {
+      "required": [
+        "id",
+        "user_id",
+        "name",
+        "type",
+        "sections",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "id": {
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "text",
+          "type": "string"
+        },
+        "user_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "format": "text",
+          "type": "string"
+        },
+        "type": {
+          "format": "text",
+          "type": "string"
+        },
+        "sections": {
+          "format": "jsonb"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "lease_documents": {
+      "required": [
+        "id",
+        "lease_id",
+        "user_id",
+        "storage_path",
+        "file_name",
+        "file_size"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "lease_id": {
+          "format": "text",
+          "type": "string"
+        },
+        "user_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "storage_path": {
+          "format": "text",
+          "type": "string"
+        },
+        "file_name": {
+          "format": "text",
+          "type": "string"
+        },
+        "file_size": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "page_count": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "parameters": {
+    "preferParams": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "in": "header",
+      "type": "string"
+    },
+    "preferReturn": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "return=representation",
+        "return=minimal",
+        "return=none"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "preferCount": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "count=none"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "preferPost": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "return=representation",
+        "return=minimal",
+        "return=none",
+        "resolution=ignore-duplicates",
+        "resolution=merge-duplicates"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "select": {
+      "name": "select",
+      "description": "Filtering Columns",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "on_conflict": {
+      "name": "on_conflict",
+      "description": "On Conflict",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "order": {
+      "name": "order",
+      "description": "Ordering",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "range": {
+      "name": "Range",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "header",
+      "type": "string"
+    },
+    "rangeUnit": {
+      "name": "Range-Unit",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "default": "items",
+      "in": "header",
+      "type": "string"
+    },
+    "offset": {
+      "name": "offset",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "limit": {
+      "name": "limit",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.profiles": {
+      "name": "profiles",
+      "description": "profiles",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/profiles"
+      }
+    },
+    "rowFilter.profiles.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.username": {
+      "name": "username",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.email": {
+      "name": "email",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.role": {
+      "name": "role",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.daily_capacity": {
+      "name": "daily_capacity",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.daily_goal": {
+      "name": "daily_goal",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.leases": {
+      "name": "leases",
+      "description": "leases",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/leases"
+      }
+    },
+    "rowFilter.leases.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.leases.name": {
+      "name": "name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.leases.client_id": {
+      "name": "client_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.leases.processing_status": {
+      "name": "processing_status",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.leases.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.document_text_cache": {
+      "name": "document_text_cache",
+      "description": "document_text_cache",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/document_text_cache"
+      }
+    },
+    "rowFilter.document_text_cache.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.document_text_cache.document_id": {
+      "name": "document_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.document_text_cache.page_number": {
+      "name": "page_number",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.document_text_cache.text_items": {
+      "name": "text_items",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.document_text_cache.extraction_method": {
+      "name": "extraction_method",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.document_text_cache.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.saved_templates": {
+      "name": "saved_templates",
+      "description": "saved_templates",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/saved_templates"
+      }
+    },
+    "rowFilter.saved_templates.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.saved_templates.user_id": {
+      "name": "user_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.saved_templates.name": {
+      "name": "name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.saved_templates.type": {
+      "name": "type",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.saved_templates.sections": {
+      "name": "sections",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.saved_templates.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.saved_templates.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.lease_documents": {
+      "name": "lease_documents",
+      "description": "lease_documents",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/lease_documents"
+      }
+    },
+    "rowFilter.lease_documents.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.lease_documents.lease_id": {
+      "name": "lease_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.lease_documents.user_id": {
+      "name": "user_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.lease_documents.storage_path": {
+      "name": "storage_path",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.lease_documents.file_name": {
+      "name": "file_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.lease_documents.file_size": {
+      "name": "file_size",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.lease_documents.page_count": {
+      "name": "page_count",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.lease_documents.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    }
+  },
+  "externalDocs": {
+    "description": "PostgREST Documentation",
+    "url": "https://postgrest.org/en/v14/references/api.html"
+  }
+}
