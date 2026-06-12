@@ -514,6 +514,7 @@ const App: React.FC = () => {
     const localHandleSubmitReview = async (leaseId: string, finalData: AbstractedData, notes?: string, timeSpent?: number, skipR2?: boolean): Promise<{ success: boolean }> => {
         await handleSubmitReview(leaseId, finalData, notes, timeSpent, skipR2);
         setLeaseToReview(null);
+        setActiveView('history');
         return { success: true };
     };
 
@@ -596,7 +597,7 @@ const App: React.FC = () => {
                 <Route path="/history" element={<HistoryTable leases={leasesForCurrentUser} onRetry={handleRetryLease} onView={handleViewLease} onDownloadExcel={handleDownloadExcel} onDownloadAllExcel={handleDownloadAllExcel} onDownloadPdf={handleDownloadPdf} onChat={setActiveView as any} onAddAmendment={handleAddAmendment as any} onOpenInsights={handleOpenLeaseInsights} onOpenWorkbench={handleStartReview} />} />
                 
                 <Route path="/profile" element={currentUser ? <ProfilePage user={currentUser} onUpdateUser={handleUpdateUser} onDeleteTemplate={handleDeleteTemplate} onUpdateTemplate={handleUpdateTemplate} /> : null} />
-                <Route path="/workbench" element={currentUser ? <Workbench mode="reviewer" lease={leaseToReview} onBack={() => { setLeaseToReview(null); setActiveView('portfolio'); }} onSaveDraft={handleSaveDraft} onSubmitReview={localHandleSubmitReview} /> : null} />
+                <Route path="/workbench" element={currentUser && leaseToReview ? <Workbench mode="reviewer" lease={leaseToReview} onBack={() => { setLeaseToReview(null); setActiveView('portfolio'); }} onSaveDraft={handleSaveDraft} onSubmitReview={localHandleSubmitReview} /> : <Navigate to="/history" replace />} />
                 
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="/" replace />} />
