@@ -21,14 +21,14 @@ export const BatchReviewTemplatesPage: React.FC<BatchReviewTemplatesPageProps> =
   onBack,
   leaseCount
 }) => {
-  const [usTemplateSet, setUsTemplateSet] = useState<TemplateSet | undefined>(initialTemplates.us);
-  const [euTemplateSet, setEuTemplateSet] = useState<TemplateSet | undefined>(initialTemplates.eu);
+  const [templateSets, setTemplateSets] = useState<BatchTemplateData>(initialTemplates);
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState('');
 
   // Helper to sort sections based on canonical order
-  const sortSections = (sections: SelectionSection[], type: 'us' | 'eu' | 'custom') => {
-      const canonicalOrder = getCanonicalSectionOrder(type);
+  const sortSections = (sections: SelectionSection[], type: string) => {
+      const canonicalType = (type === 'us' || type === 'eu') ? type : 'custom';
+      const canonicalOrder = getCanonicalSectionOrder(canonicalType);
       
       return [...sections].sort((a, b) => {
           const idxA = canonicalOrder.indexOf(a.id);
@@ -39,43 +39,44 @@ export const BatchReviewTemplatesPage: React.FC<BatchReviewTemplatesPageProps> =
       });
   };
 
-  const handleUsTemplateChange = (newMainData: SelectionSection[]) => {
-    if (usTemplateSet) setUsTemplateSet(prev => ({ ...prev!, main: newMainData }));
+  const handleTemplateChange = (type: string, newMainData: SelectionSection[]) => {
+      setTemplateSets(prev => ({ ...prev, [type]: { ...prev[type], main: newMainData } }));
   };
   
-  const handleAddUsSection = (sectionId: string) => {
-    if (!usTemplateSet) return;
-    const sectionToAdd = usTemplateSet.optional.find(s => s.id === sectionId);
-    if (sectionToAdd) {
-        setUsTemplateSet(prev => ({ 
-            ...prev!, 
-            main: sortSections([...prev!.main, sectionToAdd], 'us'), 
-            optional: prev!.optional.filter(s => s.id !== sectionId) 
-        }));
-    }
+  const handleAddSection = (type: string, sectionId: string) => {
+      setTemplateSets(prev => {
+          const set = prev[type];
+          const sectionToAdd = set.optional.find(s => s.id === sectionId);
+          if (!sectionToAdd) return prev;
+          return {
+              ...prev,
+              [type]: {
+                  ...set,
+                  main: sortSections([...set.main, sectionToAdd], type),
+                  optional: set.optional.filter(s => s.id !== sectionId)
+              }
+          };
+      });
   };
   
-  const handleRemoveUsSection = (sectionId: string) => {
-    if (!usTemplateSet) return;
-    const sectionToRemove = usTemplateSet.main.find(s => s.id === sectionId);
-    if (sectionToRemove) {
-        setUsTemplateSet(prev => ({ 
-            ...prev!, 
-            main: prev!.main.filter(s => s.id !== sectionId), 
-            optional: sortSections([...prev!.optional, sectionToRemove], 'us')
-        }));
-    }
-  };
-  
-  const handleEuTemplateChange = (newMainData: SelectionSection[]) => {
-    if (euTemplateSet) setEuTemplateSet(prev => ({ ...prev!, main: newMainData }));
+  const handleRemoveSection = (type: string, sectionId: string) => {
+      setTemplateSets(prev => {
+          const set = prev[type];
+          const sectionToRemove = set.main.find(s => s.id === sectionId);
+          if (!sectionToRemove) return prev;
+          return {
+              ...prev,
+              [type]: {
+                  ...set,
+                  main: set.main.filter(s => s.id !== sectionId),
+                  optional: sortSections([...set.optional, sectionToRemove], type)
+              }
+          };
+      });
   };
 
   const handleFinalSubmit = () => {
-    const finalTemplates: BatchTemplateData = {};
-    if (usTemplateSet) finalTemplates.us = { ...usTemplateSet };
-    if (euTemplateSet) finalTemplates.eu = { ...euTemplateSet };
-    onSubmit(finalTemplates, saveAsTemplate ? newTemplateName : undefined);
+    onSubmit(templateSets, saveAsTemplate ? newTemplateName : undefined);
   };
 
   return (
@@ -90,15 +91,20 @@ export const BatchReviewTemplatesPage: React.FC<BatchReviewTemplatesPageProps> =
       </div>
 
       <div className="space-y-8">
-        {usTemplateSet && (
-          <div className="space-y-6">
-            <TemplateEditor title="US Template Customization" templateData={usTemplateSet.main} onTemplateDataChange={handleUsTemplateChange} optionalSectionIds={usTemplateSet.originalOptionalIds} onRemoveOptionalSection={handleRemoveUsSection} />
-            <OptionalSectionsAdder sections={usTemplateSet.optional} onAdd={handleAddUsSection} />
+        {Object.entries(templateSets).map(([type, set]) => (
+          <div key={type} className="space-y-6">
+            <TemplateEditor 
+              title={`${type === 'us' ? 'US' : type === 'eu' ? 'UK/EU' : 'Custom'} Template Customization`} 
+              templateData={set.main} 
+              onTemplateDataChange={(newMainData) => handleTemplateChange(type, newMainData)} 
+              optionalSectionIds={set.originalOptionalIds} 
+              onRemoveOptionalSection={(sectionId) => handleRemoveSection(type, sectionId)} 
+            />
+            {set.optional && set.optional.length > 0 && (
+                <OptionalSectionsAdder sections={set.optional} onAdd={(sectionId) => handleAddSection(type, sectionId)} />
+            )}
           </div>
-        )}
-        {euTemplateSet && (
-          <TemplateEditor title="UK/EU Template Customization" templateData={euTemplateSet.main} onTemplateDataChange={handleEuTemplateChange} />
-        )}
+        ))}
       </div>
 
       <div className="bg-surface p-6 rounded-xl border border-border shadow-sm space-y-4">
