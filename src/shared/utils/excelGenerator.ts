@@ -326,7 +326,7 @@ const generateRentTableRows = (lease: Lease): any[][] => {
 
 const generateLeaseWorksheet = (lease: Lease): xlsx.WorkSheet | null => {
     if (!lease.abstractedData) return null;
-    if (lease.templateType === 'custom') return generateCustomLeaseWorksheet(lease);
+    if (lease.templateType !== 'us' && lease.templateType !== 'eu') return generateCustomLeaseWorksheet(lease);
 
     const isBundle = (lease.documents?.length || 0) > 1;
     const rows: any[][] = [];

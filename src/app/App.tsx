@@ -410,7 +410,6 @@ const App: React.FC = () => {
         if (!pendingLease || !pendingLease.templateType || !currentUser) { setActiveView('abstract'); return; }
 
         const { name, files, templateType, processingMode } = pendingLease;
-        const baseType = (templateType === 'us' || templateType === 'eu') ? templateType : (currentUser.savedTemplates?.find(t => t.id === templateType)?.type || 'us');
 
         // Optimistic Navigation: Jump to history immediately
         setActiveView('history');
@@ -424,7 +423,7 @@ const App: React.FC = () => {
             status: LeaseStatus.PROCESSING,
             processingMode,
             templateConfig: finalTemplateData,
-            templateType: baseType as any,
+            templateType: templateType,
             fileObjects: files
         }, files);
     };
@@ -454,9 +453,6 @@ const App: React.FC = () => {
         for (const config of pendingIndividualLeases) {
             try {
                 const templateSet = editedTemplates[config.templateType as any];
-                const baseType = (config.templateType === 'us' || config.templateType === 'eu')
-                    ? config.templateType
-                    : (currentUser.savedTemplates?.find(t => t.id === config.templateType)?.type || 'us');
 
                 // handleCreateLease: creates DB record, uploads to storage, triggers AI via Edge Function
                 await handleCreateLease({
@@ -464,7 +460,7 @@ const App: React.FC = () => {
                     status: LeaseStatus.PROCESSING,
                     processingMode: config.processingMode,
                     templateConfig: templateSet?.main,
-                    templateType: baseType as any,
+                    templateType: config.templateType as any,
                     fileObjects: [config.file],
                 }, [config.file]);
             } catch (err: any) {

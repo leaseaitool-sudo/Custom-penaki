@@ -17,7 +17,7 @@ export interface ProtocolItem {
 export const generateProtocolPrompt = (template: SelectionSection[], templateType?: string): string => {
     let prompt = systemInstructionBase + "\n\n";
 
-    if (templateType === 'custom') {
+    if (templateType !== 'us' && templateType !== 'eu') {
         prompt += customTemplateGuidelines + "\n\n";
     } else if (templateType === 'us') {
         prompt += usTemplateGuidelines + "\n\n";

@@ -253,7 +253,7 @@ export const generateSingleLeasePdf = async (lease: Lease) => {
     const logoIcon = logoIconRes.status === 'fulfilled' ? logoIconRes.value : null;
 
     // ── Branch: Custom template uses completely different layout ──
-    if (lease.templateType === 'custom') {
+    if (lease.templateType !== 'us' && lease.templateType !== 'eu') {
         await generateCustomLeasePdf(lease, doc);
 
         // Post-processing: watermarks & footers
