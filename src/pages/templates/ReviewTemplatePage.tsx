@@ -13,12 +13,12 @@ interface ReviewTemplatePageProps {
   pendingLease: {
     files: File[];
     name: string;
-    templateType: 'us' | 'eu';
+    templateType: 'us' | 'eu' | 'custom';
   };
   initialTemplateData?: SelectionSection[];
   existingTemplateId?: string;
   onSubmit: (finalTemplateData: SelectionSection[]) => void;
-  onSaveTemplate: (name: string, type: 'us' | 'eu', sections: SelectionSection[]) => void;
+  onSaveTemplate: (name: string, type: 'us' | 'eu' | 'custom', sections: SelectionSection[]) => void;
   onUpdateTemplate: (template: SavedTemplate) => void;
   onBack: () => void;
 }
@@ -40,7 +40,7 @@ export const ReviewTemplatePage: React.FC<ReviewTemplatePageProps> = ({
   const [templateName, setTemplateName] = useState('');
 
   // Helper to sort sections based on canonical order
-  const sortSections = (sections: SelectionSection[], type: 'us' | 'eu') => {
+  const sortSections = (sections: SelectionSection[], type: 'us' | 'eu' | 'custom') => {
       const canonicalOrder = getCanonicalSectionOrder(type);
       
       return [...sections].sort((a, b) => {

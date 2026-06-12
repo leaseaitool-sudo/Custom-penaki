@@ -16,7 +16,7 @@ export const createSupportChat = async (clientId: string, clientEmail: string, c
             lastUpdated: new Date(),
             messages: []
         });
-        await sendChatMessage(newId, 'support', Role.ADMIN, 'Team Penaki', 'Welcome to Penaki Support. How can we help you today?', true);
+        await sendChatMessage(newId, 'support', Role.USER, 'Team Penaki', 'Welcome to Penaki Support. How can we help you today?', true);
     }
     return true;
 };

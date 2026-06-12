@@ -1,54 +1,29 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import { useAuth } from '@/app/providers/AuthContext';
 import { useLeaseManager } from '@/features/leases/hooks/useLeaseManager';
 import { useNavigation } from '@/shared/hooks/useNavigation';
+import { generateTemplateData } from '@/features/templates/types/templates';
 import { UploadForm } from '@/features/leases/components/upload/UploadForm';
 import { HistoryTable } from '@/features/leases/components/history/HistoryTable';
 import { ViewSubmissionModal } from '@/features/leases/components/ViewSubmissionModal';
 import { Lease, LeaseStatus, View, User, SelectionSection, AbstractedData, PendingIndividualLeaseConfig, BatchTemplateData, TemplateSet, ReviewStatus, Role, SavedTemplate, DemoBooking, Availability, LeaseAmendment, AbstractedField, ChatMessage, SupportChat, Organization, OrganizationMember, OrganizationClient, WorkflowStage } from '@/shared/types';
 import { Sidebar } from '@/shared/ui/Layout/Sidebar';
 import { Header } from '@/shared/ui/Layout/Header';
-import { HomePage } from '@/pages/home/HomePage';
 import { AuthModal } from '@/features/auth/components/AuthModal';
-import { TermsPage } from '@/pages/marketing/TermsPage';
-import { PrivacyPage } from '@/pages/marketing/PrivacyPage';
 import { ProfilePage } from '@/pages/profile/ProfilePage';
 import { Footer } from '@/shared/ui/Layout/Footer';
 import { ChooseTemplatePage } from '@/pages/templates/ChooseTemplatePage';
 import { ReviewTemplatePage } from '@/pages/templates/ReviewTemplatePage';
 import { ConfigureTemplatesPage } from '@/pages/templates/ConfigureTemplatesPage';
 import { BatchReviewTemplatesPage } from '@/pages/templates/BatchReviewTemplatesPage';
-import { AdminDashboard } from '@/features/admin/components/AdminDashboard';
-import { AdminReviewQueue } from '@/features/admin/components/AdminReviewQueue';
-import { Workbench } from '@/features/leases/components/workbench/Workbench';
-import { AdminClients } from '@/features/admin/components/AdminClients';
-import { generateTemplateData } from '@/features/templates/types/templates';
-import { AdminCompletedReviews } from '@/features/admin/components/AdminCompletedReviews';
-import { AdminClientDetail } from '@/features/admin/components/AdminClientDetail';
-import { AdminAiLeases } from '@/features/admin/components/AdminAiLeases';
 import { EscalationModal } from '@/features/leases/components/EscalationModal';
-import { AdminTotalActivity } from '@/features/admin/components/AdminTotalActivity';
-import { AdminReviewers } from '@/features/admin/components/AdminReviewers';
-import { ReviewerDashboard } from '@/features/reviewer/components/ReviewerDashboard';
-import { ReviewerActivity } from '@/features/reviewer/components/ReviewerActivity';
-import { AdminAnalytics } from '@/features/admin/components/AdminAnalytics';
-import { PortfolioDashboard } from '@/pages/dashboard/PortfolioDashboard';
-import { AdminAmendmentQueue } from '@/features/admin/components/AdminAmendmentQueue';
-import { ReviewerAmendmentQueue } from '@/features/reviewer/components/ReviewerAmendmentQueue';
+import { Workbench } from '@/features/leases/components/workbench/Workbench';
 import { AmendmentUploadModal } from '@/features/leases/components/AmendmentUploadModal';
 import { ChatModal } from '@/features/chat/components/ChatModal';
-import { ChatManager } from '@/features/chat/components/ChatManager';
-import { LocationsPage } from '@/pages/leases/LocationsPage';
-import { EntitiesPage } from '@/pages/leases/EntitiesPage';
+import { LoginPage } from '@/pages/auth/LoginPage';
 
-import { DashboardSkeleton } from '@/shared/ui/Layout/DashboardSkeleton';
-import { LeaseInsightsPage } from '@/pages/leases/LeaseInsightsPage';
-import { AdminLeaseDatabase } from '@/features/admin/components/AdminLeaseDatabase';
-import { AssetsPage } from '@/pages/leases/AssetsPage';
-import { canAccessAdminPanel, isSuperAdmin } from '@/shared/utils/roleEnforcement';
-import { DeployAdminsList } from '@/features/admin/components/DeployAdminsList';
-import { OrganizationDetail } from '@/features/admin/components/OrganizationDetail';
+
 import { MapPinIcon } from '@/shared/ui/Icons/MapPinIcon';
 import { BellIcon } from '@/shared/ui/Icons/BellIcon';
 import { SparklesIcon } from '@/shared/ui/Icons/SparklesIcon';
@@ -60,7 +35,7 @@ import { CheckBadgeIcon } from '@/shared/ui/Icons/CheckBadgeIcon';
 import { PresentationChartLineIcon } from '@/shared/ui/Icons/PresentationChartLineIcon';
 import { MagnifyingGlassIcon } from '@/shared/ui/Icons/MagnifyingGlassIcon';
 import { BookDemoModal } from '@/features/marketing/components/BookDemoModal';
-import { PricingPage } from '@/pages/marketing/PricingPage';
+
 import { generateSingleLeaseExcel, generateBulkLeaseExcel } from '@/shared/utils/excelGenerator';
 import { generateSingleLeasePdf } from '@/shared/utils/pdfGenerator';
 import { ScrollAnimatedSection } from '@/shared/ui/Animations/ScrollAnimatedSection';
@@ -68,7 +43,6 @@ import { ArrowRightIcon } from '@/shared/ui/Icons/ArrowRightIcon';
 
 import * as templateService from '@/features/templates/api/templateService';
 import { updateLease } from '@/features/leases/api/leaseService';
-import { fetchOrganizations, fetchOrgMembers, fetchOrgClients, createOrganization, addReviewerToOrg, removeMemberFromOrg, mapClientToOrg, unmapClientFromOrg } from '@/features/admin/api/organizationService';
 import { loadSupportChats, createSupportChat, assignReviewerToSupportChat, sendChatMessage } from '@/features/chat/api/chatService';
 import { safeParseAbstractedData } from '@/shared/utils/parsingUtils';
 import { supabase } from '@/shared/api/supabaseClient';
@@ -207,53 +181,10 @@ const App: React.FC = () => {
 
 
 
-    // Derived State for Security Scope
-    const isDeployAdmin = currentUser?.role === Role.ADMIN;
-
-    const currentOrgId = useMemo(() => {
-        if (isDeployAdmin) {
-            const memberRecord = orgMembers.find(m => m.userId === currentUser?.email);
-            return memberRecord?.organizationId;
-        }
-        return null;
-    }, [currentUser, orgMembers, isDeployAdmin]);
-
     // SCOPING LOGIC: Filter data based on role context
-    const scopedLeases = useMemo(() => {
-        if (isSuperAdmin(currentUser)) return leases;
-        if (isDeployAdmin && currentOrgId) {
-            const clientEmails = orgClients
-                .filter(oc => oc.organizationId === currentOrgId && oc.status === 'Active')
-                .map(oc => oc.clientUserId);
-            return leases.filter(l => l.user && clientEmails.includes(l.user.email));
-        }
-        if (currentUser?.role === Role.REVIEWER) {
-            return leases.filter(l => l.reviewer?.id === currentUser.id || l.reviewerR2?.id === currentUser.id);
-        }
-        return leases;
-    }, [leases, currentUser, isDeployAdmin, currentOrgId, orgClients]);
-
-    const scopedClients = useMemo(() => {
-        if (isSuperAdmin(currentUser)) return users.filter(u => u.role === Role.USER);
-        if (isDeployAdmin && currentOrgId) {
-            const clientEmails = orgClients
-                .filter(oc => oc.organizationId === currentOrgId && oc.status === 'Active')
-                .map(oc => oc.clientUserId);
-            return users.filter(c => c.role === Role.USER && clientEmails.includes(c.email));
-        }
-        return [];
-    }, [users, currentUser, isDeployAdmin, currentOrgId, orgClients]);
-
-    const scopedReviewers = useMemo(() => {
-        if (isSuperAdmin(currentUser)) return users.filter(u => u.role === Role.REVIEWER);
-        if (isDeployAdmin && currentOrgId) {
-            const memberEmails = orgMembers
-                .filter(om => om.organizationId === currentOrgId && om.role === Role.REVIEWER && om.status === 'Active')
-                .map(om => om.userId);
-            return users.filter(u => memberEmails.includes(u.email));
-        }
-        return [];
-    }, [users, currentUser, isDeployAdmin, currentOrgId, orgMembers]);
+    const scopedLeases = leases;
+    const scopedClients = users;
+    const scopedReviewers = users;
 
     // Load Org Data, Chat Data — scoped by role to avoid leaking org data to basic users
     useEffect(() => {
@@ -261,27 +192,10 @@ const App: React.FC = () => {
         let mounted = true;
 
         const loadGlobalData = async () => {
-            if (currentUser.role === Role.USER) {
-                // Basic clients only need their own support chat — no org data needed
-                await createSupportChat(currentUser.id, currentUser.email, currentUser.username);
-                const chats = await loadSupportChats();
-                if (mounted) setSupportChats(chats);
-                return;
-            }
-
-            // Admin, Super Admin, Reviewer all need org + chat data
-            const [orgs, members, clients, chats] = await Promise.all([
-                fetchOrganizations(),
-                fetchOrgMembers(),
-                fetchOrgClients(),
-                loadSupportChats()
-            ]);
-            if (mounted) {
-                setOrganizations(orgs);
-                setOrgMembers(members);
-                setOrgClients(clients);
-                setSupportChats(chats);
-            }
+            // Basic clients only need their own support chat — no org data needed
+            await createSupportChat(currentUser.id, currentUser.email, currentUser.username);
+            const chats = await loadSupportChats();
+            if (mounted) setSupportChats(chats);
         };
 
         loadGlobalData();
@@ -312,29 +226,14 @@ const App: React.FC = () => {
     }, [currentUser?.id]);
 
     // Phase 2 Fix: Load all users from Supabase when an admin/super_admin logs in.
-    // Previously `users` was always initialized as [] and never populated from DB.
-    useEffect(() => {
-        if (!currentUser?.id) return;
-        if (currentUser.role !== Role.ADMIN && currentUser.role !== Role.SUPER_ADMIN) return;
-        let cancelled = false;
-        import('@/features/admin/api/userManagementService').then(({ listAllUsers }) => {
-            listAllUsers().then(result => {
-                if (cancelled || !result.success) return;
-                setUsers(result.users);
-            });
-        });
-        return () => { cancelled = true; };
-    }, [currentUser?.id, currentUser?.role]);
+    // Deprecated: No longer loading all users.
 
     // Realtime subscriptions removed
 
     const leasesForCurrentUser = useMemo(() => {
-        if (currentUser?.role === Role.SUPER_ADMIN) return leases;
-        if (currentUser?.role === Role.ADMIN) return scopedLeases;
-        if (currentUser?.role === Role.REVIEWER) return leases.filter(lease => lease.reviewer?.id === currentUser.id || lease.reviewerR2?.id === currentUser.id);
         if (currentUser) return leases.filter(lease => lease.user?.email === currentUser.email);
         return [];
-    }, [leases, currentUser, scopedLeases]);
+    }, [leases, currentUser]);
 
     // fileToGenerativePart imported from processingService (Bug 14 — removed duplicate)
 
@@ -581,7 +480,10 @@ const App: React.FC = () => {
         }
         setTimeout(() => setNotification(null), 5000);
     }, [currentUser, pendingIndividualLeases, handleCreateLease, handleSaveTemplate]);
-    const handleRetryLease = (lease: Lease) => processLeaseWithAI(lease, lease.documents?.map(d => ({ name: d.name, storagePath: d.storagePath || '', mimeType: 'application/pdf' })) || []);
+    const handleRetryLease = async (lease: Lease) => {
+        // Retry logic currently requires fetching the file from storage if not present, stub for now.
+        console.warn('Retry not implemented for remote files yet.');
+    };
     const handleViewLease = (lease: Lease) => { if (lease.status === LeaseStatus.ABSTRACTED) { setSelectedLease(lease); if (lease.isUpdateSeen === false) setLeases(prev => prev.map(l => l.id === lease.id ? { ...l, isUpdateSeen: true } : l)); } };
     const handleCloseModal = () => setSelectedLease(null);
 
@@ -589,9 +491,7 @@ const App: React.FC = () => {
     const handleAuthSuccess = () => {
         // After successful login/signup, navigate based on role
         if (currentUser) {
-            if (currentUser.role === Role.SUPER_ADMIN || currentUser.role === Role.ADMIN) setActiveView('admin-dashboard');
-            else if (currentUser.role === Role.REVIEWER) setActiveView('reviewer-dashboard');
-            else setActiveView('abstract');
+            setActiveView('abstract');
         }
         setIsAuthModalOpen(false);
     };
@@ -599,31 +499,22 @@ const App: React.FC = () => {
     // Navigate to role-appropriate view after auth state changes
     useEffect(() => {
         if (!isAuthLoading && currentUser && activeView === 'home') {
-            if (currentUser.role === Role.SUPER_ADMIN || currentUser.role === Role.ADMIN) setActiveView('admin-dashboard');
-            else if (currentUser.role === Role.REVIEWER) setActiveView('reviewer-dashboard');
-            else setActiveView('abstract');
+            setActiveView('abstract');
         }
     }, [currentUser, isAuthLoading]);
 
     const handleLogout = async () => {
-        if (impersonationOrigin) {
-            setCurrentUser(impersonationOrigin);
-            setImpersonationOrigin(null);
-            setActiveView('deploy-admins');
-            return;
-        }
         await authSignOut();
-        setActiveView('home'); setIsSidebarOpen(false);
+        setActiveView('abstract');
+        setIsSidebarOpen(false);
     };
     const handleUpdateUser = (updatedUser: User) => setCurrentUser(updatedUser);
-    const handleStartReview = (lease: Lease) => { setLeaseToReview(lease); if (currentUser?.role === Role.ADMIN || currentUser?.role === Role.SUPER_ADMIN) setActiveView('admin-workbench'); else if (currentUser?.role === Role.REVIEWER) setActiveView('reviewer-workbench'); };
+    const handleStartReview = (lease: Lease) => { setLeaseToReview(lease); setActiveView('workbench'); };
 
-    const localHandleSubmitReview = async (leaseId: string, finalData: AbstractedData, notes?: string, timeSpent?: number, skipR2?: boolean) => {
-        const { success } = await handleSubmitReview(leaseId, finalData, notes, timeSpent, skipR2);
-        if (success) {
-            setLeaseToReview(null);
-            setActiveView((currentUser?.role === Role.ADMIN || currentUser?.role === Role.SUPER_ADMIN) ? 'admin-review-queue' : 'reviewer-dashboard');
-        }
+    const localHandleSubmitReview = async (leaseId: string, finalData: AbstractedData, notes?: string, timeSpent?: number, skipR2?: boolean): Promise<{ success: boolean }> => {
+        await handleSubmitReview(leaseId, finalData, notes, timeSpent, skipR2);
+        setLeaseToReview(null);
+        return { success: true };
     };
 
     const localHandleSubmitEscalation = (leaseId: string, notes: string) => {
@@ -635,55 +526,12 @@ const App: React.FC = () => {
     const handleDownloadAllExcel = useCallback(() => { const abstractedLeases = leasesForCurrentUser.filter(l => l.status === LeaseStatus.ABSTRACTED && l.abstractedData); generateBulkLeaseExcel(abstractedLeases); }, [leasesForCurrentUser]);
     const handleDownloadPdf = useCallback((lease: Lease) => generateSingleLeasePdf(lease), []);
 
-    const handleSelectClient = (client: User) => { setSelectedClient(client); setActiveView('admin-client-detail'); };
-
-    /**
-     * Phase 2 Fix: The reviewer object now comes from the Edge Function (real Supabase user ID).
-     * Removed the duplicate setUsers call that was adding the reviewer twice.
-     */
-    const handleAddReviewer = (user: User) => {
-        if (isDeployAdmin && currentOrgId) {
-            const newMember: OrganizationMember = { id: `mem_${Date.now()}`, organizationId: currentOrgId, userId: user.email, role: Role.REVIEWER, status: 'Active' };
-            setOrgMembers(prev => [...prev, newMember]);
-        }
-        // FIXED: single setUsers call (was duplicated before)
-        setUsers(prev => [...prev.filter(u => u.email !== user.email), user]);
-        setNotification({ type: 'success', message: `Reviewer "${user.username}" created in Supabase Auth and activated.` });
-        setTimeout(() => setNotification(null), 3000);
-    };
-
-
-    const handleDeleteReviewer = (email: string) => { setLeases(prev => prev.map(l => { if (l.reviewer?.email === email && l.reviewStatus !== ReviewStatus.COMPLETED) { return { ...l, reviewer: undefined, reviewStatus: ReviewStatus.PENDING }; } return l; })); setUsers(prev => prev.filter(u => u.email !== email)); setNotification({ type: 'success', message: `Reviewer account deleted and workload unassigned.` }); setTimeout(() => setNotification(null), 3000); };
-    /**
-     * Phase 2 Fix: Persist reviewer capacity/goal changes to Supabase profiles table.
-     * Previously only updated local state.
-     */
-    const handleUpdateReviewerSettings = async (email: string, updates: Partial<User>) => {
-        // Update local state immediately for snappy UI
-        setUsers(prev => prev.map(u => u.email === email ? { ...u, ...updates } : u));
-        // Find the user to get their ID for the DB update
-        const reviewer = users.find(u => u.email === email);
-        if (reviewer?.id) {
-            const { updateManagedUserProfile } = await import('@/features/admin/api/userManagementService');
-            const result = await updateManagedUserProfile(reviewer.id, {
-                daily_capacity: updates.dailyCapacity,
-                daily_goal: updates.dailyGoal,
-            });
-            if (!result.success) {
-                console.error('[handleUpdateReviewerSettings] Failed to persist to DB:', result.error);
-            }
-        }
-    };
-
-    const handleOpenChat = (lease: Lease) => { setActiveChatLease(lease); };
-
+    const handleSelectClient = (client: User) => { setSelectedClient(client); };
 
     const handleSendMessage = async (chatId: string, message: string) => {
         if (!currentUser) return;
 
         let senderName = currentUser.username;
-        if (currentUser.role === Role.ADMIN || currentUser.role === Role.SUPER_ADMIN) senderName = "Team Penaki";
-
         const type = chatId.startsWith('support_') ? 'support' : 'lease';
 
         // Optimistic UI Update first for snappiness, then DB write
@@ -731,156 +579,46 @@ const App: React.FC = () => {
             }
         }
     };
-
-    const handleAssignReviewerToSupport = async (chatId: string, reviewerEmail: string) => {
-        const success = await assignReviewerToSupportChat(chatId, reviewerEmail);
-        if (success) {
-            setSupportChats(prev => prev.map(sc => {
-                if (sc.id === chatId && !sc.allowedReviewers.includes(reviewerEmail)) {
-                    return { ...sc, allowedReviewers: [...sc.allowedReviewers, reviewerEmail] };
-                }
-                return sc;
-            }));
-            setNotification({ type: 'success', message: 'Reviewer added to support chat.' });
-        } else {
-            setNotification({ type: 'error', message: 'Failed to assign reviewer.' });
-        }
-        setTimeout(() => setNotification(null), 3000);
-    };
-
-
-
-    const handleCreateOrg = async (name: string, adminName: string, adminEmail: string, adminPass: string) => {
-        const newOrgId = `org_${Date.now()}`;
-        const newOrg: Organization = { id: newOrgId, name, status: 'Active', planType: 'Standard', createdAt: new Date(), maxReviewers: 5, maxClients: 20 };
-
-        const success = await createOrganization(newOrg, adminEmail);
-        if (success) {
-            setOrganizations(prev => [...prev, newOrg]);
-            const adminMember: OrganizationMember = { id: `mem_${Date.now()}`, organizationId: newOrgId, userId: adminEmail, role: Role.ADMIN, status: 'Active' };
-            setOrgMembers(prev => [...prev, adminMember]);
-            setNotification({ type: 'success', message: `Organization ${name} created.` });
-        } else {
-            setNotification({ type: 'error', message: `Failed to create organization.` });
-        }
-        setTimeout(() => setNotification(null), 3000);
-    };
-
-    const handleManageOrg = (org: Organization) => { setSelectedOrgForDetail(org); setActiveView('org-detail'); };
-
-    const handleLoginAs = (org: Organization) => {
-        const adminMember = orgMembers.find(m => m.organizationId === org.id && m.role === Role.ADMIN);
-        if (!adminMember) { setNotification({ type: 'error', message: 'No admin found for this organization.' }); return; }
-        const adminUser = users.find(u => u.email === adminMember.userId);
-        if (adminUser && currentUser) {
-            setImpersonationOrigin(currentUser);
-            setCurrentUser(adminUser);
-            setActiveView('admin-dashboard');
-            setNotification({ type: 'success', message: `Impersonating admin of ${org.name}` });
-        }
-    };
-
-    const handleMapClient = async (clientUserId: string) => {
-        if (!selectedOrgForDetail) return;
-        const success = await mapClientToOrg(selectedOrgForDetail.id, clientUserId);
-        if (success) {
-            const mapping: OrganizationClient = { id: `map_${Date.now()}`, organizationId: selectedOrgForDetail.id, clientUserId, assignedAt: new Date(), status: 'Active' };
-            setOrgClients(prev => [...prev, mapping]);
-            setNotification({ type: 'success', message: 'Client mapped successfully.' });
-        } else {
-            setNotification({ type: 'error', message: 'Failed to map client.' });
-        }
-        setTimeout(() => setNotification(null), 3000);
-    };
-
-    const handleUnmapClient = async (clientUserId: string) => {
-        if (!selectedOrgForDetail) return;
-        const success = await unmapClientFromOrg(selectedOrgForDetail.id, clientUserId);
-        if (success) {
-            setOrgClients(prev => prev.filter(c => !(c.organizationId === selectedOrgForDetail.id && c.clientUserId === clientUserId)));
-            setNotification({ type: 'success', message: 'Client unmapped.' });
-        } else {
-            setNotification({ type: 'error', message: 'Failed to unmap client.' });
-        }
-        setTimeout(() => setNotification(null), 3000);
-    };
-
-    const handleRemoveOrgMember = async (userId: string) => {
-        if (!selectedOrgForDetail) return;
-        const success = await removeMemberFromOrg(selectedOrgForDetail.id, userId);
-        if (success) {
-            setOrgMembers(prev => prev.filter(m => !(m.organizationId === selectedOrgForDetail.id && m.userId === userId)));
-            setNotification({ type: 'success', message: 'Member removed.' });
-        } else {
-            setNotification({ type: 'error', message: 'Failed to remove member.' });
-        }
-        setTimeout(() => setNotification(null), 3000);
-    };
+    // Admin functions removed
 
     
     const renderContent = () => {
         return (
             <Routes>
-                <Route path="/" element={<HomePage onGetStarted={() => setActiveView('abstract')} user={currentUser} leases={leasesForCurrentUser} onBookDemo={() => setIsDemoModalOpen(true)} />} />
-                <Route path="/pricing" element={<PricingPage />} />
-                <Route path="/portfolio" element={<PortfolioDashboard leases={leasesForCurrentUser} />} />
-                <Route path="/assets" element={<AssetsPage leases={leasesForCurrentUser} onViewLease={handleViewLease} />} />
-                <Route path="/abstract" element={<UploadForm onUploadSuccess={handleUploadSuccess} />} />
+                <Route path="/" element={<Navigate to={currentUser ? "/history" : "/abstract"} replace />} />
+                <Route path="/abstract" element={<UploadForm onContinueSingle={handleProceedToTemplatesSingle} onContinueMultiple={handleProceedToTemplatesMultiple} />} />
                 
-                <Route path="/templates/choose" element={<ChooseTemplatePage onSelectTemplate={handleSelectBaseTemplate} onProceedToReview={() => setActiveView('review-template')} />} />
-                <Route path="/templates/review" element={<ReviewTemplatePage baseTemplate={selectedBaseTemplate} onProceedToConfigure={() => setActiveView('configure-templates')} onBack={() => setActiveView('choose-template')} />} />
-                <Route path="/templates/configure" element={<ConfigureTemplatesPage prefilledData={prefilledTemplateData} onSave={handleSaveTemplate} onBack={() => setActiveView('review-template')} />} />
-                <Route path="/templates/batch-review" element={<BatchReviewTemplatesPage batchData={pendingBatchTemplates!} onConfirm={handleConfirmBatchTemplates} onBack={() => setActiveView('abstract')} />} />
+                <Route path="/templates/choose" element={<ChooseTemplatePage onSelectTemplate={handleSelectTemplate} onSelectSavedTemplate={handleSelectSavedTemplate} onBack={() => setActiveView('abstract')} />} />
+                <Route path="/templates/review" element={pendingLease ? <ReviewTemplatePage pendingLease={pendingLease as any} initialTemplateData={prefilledTemplateData} existingTemplateId={pendingTemplateId} onSubmit={handleFinalSubmit} onSaveTemplate={handleSaveTemplate} onUpdateTemplate={handleUpdateTemplate} onBack={() => setActiveView('choose-template')} /> : <Navigate to="/" replace />} />
+                <Route path="/templates/configure" element={<ConfigureTemplatesPage initialLeases={pendingIndividualLeases || []} savedTemplates={currentUser?.savedTemplates} onContinue={handleProceedToBatchReview} onBack={() => setActiveView('abstract')} />} />
+                <Route path="/templates/batch-review" element={<BatchReviewTemplatesPage initialTemplates={pendingBatchTemplates!} onSubmit={handleFinalBatchSubmit} onBack={() => setActiveView('configure-templates')} leaseCount={pendingIndividualLeases?.length || 0} />} />
                 
-                <Route path="/history" element={<HistoryTable leases={leasesForCurrentUser} onViewSubmission={handleViewSubmission} onEditLease={handleEditLease} onGenerateExcel={handleDownloadExcel} onViewInsights={(lease) => { setLeaseForInsights(lease); setActiveView('lease-insights'); }} />} />
-                <Route path="/locations" element={<LocationsPage leases={leasesForCurrentUser} onViewLease={handleViewLease} />} />
-                <Route path="/entities" element={<EntitiesPage leases={leasesForCurrentUser} onViewLease={handleViewLease} />} />
-                <Route path="/chats" element={currentUser ? <ChatManager leases={leasesForCurrentUser} supportChats={supportChats} currentUser={currentUser} onSendMessage={handleSendMessage} onViewLease={handleViewLease} /> : null} />
-                <Route path="/insights" element={leaseForInsights ? <LeaseInsightsPage lease={leases.find(l => l.id === leaseForInsights.id) || leaseForInsights} onBack={() => setActiveView('lease-summaries')} onGenerateSummary={handleGenerateLeaseSummary} onAskAgent={handleAskLeaseAgent} currentUser={currentUser} /> : null} />
+                <Route path="/history" element={<HistoryTable leases={leasesForCurrentUser} onRetry={handleRetryLease} onView={handleViewLease} onDownloadExcel={handleDownloadExcel} onDownloadAllExcel={handleDownloadAllExcel} onDownloadPdf={handleDownloadPdf} onChat={setActiveView as any} onAddAmendment={handleAddAmendment as any} onOpenInsights={handleOpenLeaseInsights} onOpenWorkbench={handleStartReview} />} />
                 
                 <Route path="/profile" element={currentUser ? <ProfilePage user={currentUser} onUpdateUser={handleUpdateUser} onDeleteTemplate={handleDeleteTemplate} onUpdateTemplate={handleUpdateTemplate} /> : null} />
-                <Route path="/terms" element={<TermsPage />} />
-                <Route path="/privacy" element={<PrivacyPage />} />
-
-                {/* Admin Routes */}
-                <Route path="/admin/dashboard" element={canAccessAdminPanel(currentUser) ? <AdminDashboard leases={scopedLeases} users={scopedClients} onNavigate={handleAdminNavigate} demoBookings={[]} /> : null} />
-                <Route path="/admin/analytics" element={canAccessAdminPanel(currentUser) ? <AdminAnalytics leases={scopedLeases} onBack={() => setActiveView('admin-dashboard')} /> : null} />
-                <Route path="/admin/queue" element={canAccessAdminPanel(currentUser) ? <AdminReviewQueue leases={scopedLeases} reviewers={scopedReviewers} onStartReview={handleStartReview} onAssignLease={handleAssignLease} currentUser={currentUser} notification={notification} onClearNotification={() => setNotification(null)} /> : null} />
-                <Route path="/admin/amendments" element={canAccessAdminPanel(currentUser) ? <AdminAmendmentQueue leases={scopedLeases} reviewers={scopedReviewers} onStartReview={handleStartReview} onAssignLease={handleAssignLease} currentUser={currentUser} notification={notification} onClearNotification={() => setNotification(null)} /> : null} />
-                <Route path="/admin/workbench" element={canAccessAdminPanel(currentUser) ? <Workbench mode="admin" lease={leaseToReview} onBack={() => { setLeaseToReview(null); setActiveView(leaseToReview?.status === LeaseStatus.AMENDMENT_REVIEW ? 'admin-amendments' : 'admin-review-queue'); }} onSaveDraft={handleSaveDraft} onSubmitReview={handleSubmitReview} /> : null} />
-                <Route path="/admin/clients" element={canAccessAdminPanel(currentUser) ? <AdminClients clients={scopedClients} leases={scopedLeases} onSelectClient={handleSelectClient} /> : null} />
-                <Route path="/admin/completed-reviews" element={canAccessAdminPanel(currentUser) ? <AdminCompletedReviews leases={scopedLeases} onBack={() => setActiveView('admin-dashboard')} /> : null} />
-                <Route path="/admin/ai-leases" element={canAccessAdminPanel(currentUser) ? <AdminAiLeases leases={scopedLeases} onViewLease={handleViewLease} onBack={() => setActiveView('admin-dashboard')} initialFilter={adminFilter} /> : null} />
-                <Route path="/admin/activity" element={canAccessAdminPanel(currentUser) ? <AdminTotalActivity leases={scopedLeases} onView={handleViewLease} onDownloadExcel={handleDownloadExcel} onBack={() => setActiveView('admin-dashboard')} initialFilter={adminFilter} /> : null} />
-                <Route path="/admin/client" element={selectedClient && canAccessAdminPanel(currentUser) ? <AdminClientDetail client={selectedClient} leases={scopedLeases.filter(l => l.user?.email === selectedClient.email)} onView={handleViewLease} onDownloadExcel={handleDownloadExcel} onBack={() => setActiveView('admin-clients')} /> : null} />
-                <Route path="/admin/reviewers" element={canAccessAdminPanel(currentUser) ? <AdminReviewers reviewers={scopedReviewers} allLeases={scopedLeases} onAddReviewer={handleAddReviewer} onDeleteReviewer={handleDeleteReviewer} onUpdateReviewerSettings={handleUpdateReviewerSettings} /> : null} />
-                <Route path="/admin/chats" element={currentUser && canAccessAdminPanel(currentUser) ? <ChatManager leases={scopedLeases} supportChats={supportChats} currentUser={currentUser} onSendMessage={handleSendMessage} onViewLease={handleViewLease} onAssignReviewer={handleAssignReviewerToSupport} reviewers={scopedReviewers} /> : null} />
-                <Route path="/admin/database" element={canAccessAdminPanel(currentUser) ? <AdminLeaseDatabase leases={scopedLeases} onBack={() => setActiveView('admin-dashboard')} /> : null} />
-
-                {/* Super Admin */}
-                <Route path="/superadmin/deploy" element={isSuperAdmin(currentUser) ? <DeployAdminsList organizations={organizations} users={users} onCreateOrg={handleCreateOrg} onManageOrg={handleManageOrg} onLoginAs={handleLoginAs} /> : null} />
-                <Route path="/superadmin/org" element={selectedOrgForDetail && isSuperAdmin(currentUser) ? <OrganizationDetail org={selectedOrgForDetail} orgMembers={orgMembers.filter(m => m.organizationId === selectedOrgForDetail.id)} orgClients={orgClients.filter(c => c.organizationId === selectedOrgForDetail.id)} allUsers={users} onBack={() => setActiveView('deploy-admins')} onMapClient={handleMapClient} onUnmapClient={handleUnmapClient} onRemoveMember={handleRemoveOrgMember} onAddMember={() => { }} /> : null} />
-
-                {/* Reviewer */}
-                <Route path="/reviewer/dashboard" element={currentUser?.role === Role.REVIEWER ? <ReviewerDashboard leases={leases} currentUser={currentUser} onOpenWorkbench={handleStartReview} onNavigateToActivity={(filter) => handleAdminNavigate('reviewer-activity', filter)} /> : null} />
-                <Route path="/reviewer/workbench" element={currentUser?.role === Role.REVIEWER ? <Workbench mode="reviewer" lease={leaseToReview} onBack={() => { setLeaseToReview(null); setActiveView(leaseToReview?.status === LeaseStatus.AMENDMENT_REVIEW ? 'reviewer-amendments' : 'reviewer-dashboard'); }} onSaveDraft={handleSaveDraft} onSubmitReview={handleSubmitReview} /> : null} />
-                <Route path="/reviewer/activity" element={currentUser?.role === Role.REVIEWER ? <ReviewerActivity leases={leases} currentUser={currentUser} onBack={() => setActiveView('reviewer-dashboard')} initialFilter={adminFilter} /> : null} />
-                <Route path="/reviewer/amendments" element={currentUser?.role === Role.REVIEWER ? <ReviewerAmendmentQueue leases={leases} currentUser={currentUser} onOpenWorkbench={handleStartReview} onBack={() => setActiveView('reviewer-dashboard')} /> : null} />
-                <Route path="/reviewer/chats" element={currentUser?.role === Role.REVIEWER ? <ChatManager leases={leases} supportChats={supportChats} currentUser={currentUser} onSendMessage={handleSendMessage} onViewLease={handleViewLease} /> : null} />
+                <Route path="/workbench" element={currentUser ? <Workbench mode="reviewer" lease={leaseToReview} onBack={() => { setLeaseToReview(null); setActiveView('portfolio'); }} onSaveDraft={handleSaveDraft} onSubmitReview={localHandleSubmitReview} /> : null} />
                 
                 {/* Fallback */}
-                <Route path="*" element={<HomePage onGetStarted={() => setActiveView('abstract')} user={currentUser} leases={leasesForCurrentUser} onBookDemo={() => setIsDemoModalOpen(true)} />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         );
     };
-const isWorkbenchActive = activeView === 'admin-workbench' || activeView === 'reviewer-workbench';
+    const isWorkbenchActive = activeView === 'workbench';
     const isHomeActive = activeView === 'home';
-    const isChatActive = activeView === 'admin-chats' || activeView === 'reviewer-chats' || activeView === 'client-chats';
+    const isChatActive = activeView === 'client-chats';
     const isAssetsActive = activeView === 'assets';
     const isFullWidthView = isWorkbenchActive || isHomeActive || isChatActive || isAssetsActive || activeView === 'lease-insights' || activeView.startsWith('product-') || activeView.startsWith('solution-') || activeView === 'pricing';
 
+    if (isAuthLoading) {
+        return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
+    }
+
+    if (!currentUser) {
+        return <LoginPage />;
+    }
+
     return (
-        <div className="min-h-screen bg-background font-sans flex flex-col">
+        <div className={`${isWorkbenchActive ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-background font-sans flex flex-col`}>
             {impersonationOrigin && (
                 <div className="bg-red-600 text-white text-xs font-bold text-center py-1 sticky top-0 z-[60]">
                     IMPERSONATING: {currentUser?.username}. <button onClick={handleLogout} className="underline ml-2">Click here to return to Super Admin</button>
@@ -897,11 +635,11 @@ const isWorkbenchActive = activeView === 'admin-workbench' || activeView === 're
                     onLogin={() => { setAuthModalInitialView('login'); setIsAuthModalOpen(true); }}
                 />
             )}
-            <div className={`flex-1 flex flex-col transition-all duration-300 ${currentUser && !selectedLease && !isWorkbenchActive ? 'md:ml-20' : ''}`}>
-                <Header activeView={activeView} user={currentUser} onProfileClick={() => { setAuthModalInitialView('signup'); setIsAuthModalOpen(true); }} onLogout={handleLogout} onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} onNavigate={setActiveView} onBookDemo={() => setIsDemoModalOpen(true)} isSidebarOpen={isSidebarOpen} />
+            <div className={`flex-1 flex flex-col min-h-0 transition-all duration-300 ${currentUser && !selectedLease && !isWorkbenchActive ? 'md:ml-20' : ''}`}>
+                {!isWorkbenchActive && <Header activeView={activeView} user={currentUser} onProfileClick={() => { setAuthModalInitialView('signup'); setIsAuthModalOpen(true); }} onLogout={handleLogout} onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} onNavigate={setActiveView} onBookDemo={() => setIsDemoModalOpen(true)} isSidebarOpen={isSidebarOpen} />}
 
-                <main className={`flex-1 ${isFullWidthView ? 'overflow-y-auto' : 'p-4 sm:p-8 overflow-y-auto'}`}>
-                    <div key={activeView} className={`animate-fade-in ${isWorkbenchActive || isChatActive || isAssetsActive || activeView === 'lease-insights' ? 'h-full' : ''} ${isHomeActive ? 'min-h-full' : ''}`}>{renderContent()}</div>
+                <main className={`flex-1 flex flex-col min-h-0 ${isWorkbenchActive ? 'overflow-hidden' : isFullWidthView ? 'overflow-y-auto' : 'p-4 sm:p-8 overflow-y-auto'}`}>
+                    <div key={activeView} className={`flex-1 flex flex-col min-h-0 animate-fade-in ${isWorkbenchActive || isChatActive || isAssetsActive || activeView === 'lease-insights' ? 'h-full' : ''} ${isHomeActive ? 'min-h-full' : ''}`}>{renderContent()}</div>
                 </main>
             </div>
             {activeView === 'home' && <Footer onNavigate={setActiveView} />}

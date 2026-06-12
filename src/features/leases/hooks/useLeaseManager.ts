@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Lease, LeaseStatus, ReviewStatus, WorkflowStage, AbstractedData, User } from '@/shared/types';
 import { supabase } from '@/shared/api/supabaseClient';
 import { fetchLeases as fetchLeasesAPI, updateLease as updateLeaseAPI, createLease as createLeaseAPI, createDocumentRecord, submitReviewWorkflow, escalateLeaseWorkflow, assignReviewerWorkflow, markLeaseFailedWorkflow } from '@/features/leases/api/leaseService';
+import { processLeaseClientSide } from '@/features/leases/api/processingService';
 import { uploadDocument, getPublicUrl } from '@/shared/api/storageService';
 import { Role } from '@/shared/types';
 import { canAccessAdminPanel } from '@/shared/utils/roleEnforcement';
@@ -108,9 +109,9 @@ export const useLeaseManager = (currentUser: User | null, isAuthLoading: boolean
         return uploadedFiles;
     };
 
-    const processLeaseWithAI = useCallback(async (leaseToProcess: Lease, uploadedFiles: Array<{name: string, storagePath: string, mimeType: string}>, retryAttempt = 0) => {
+    const processLeaseWithAI = useCallback(async (leaseToProcess: Lease, files: File[], retryAttempt = 0) => {
         const { templateConfig, templateType } = leaseToProcess;
-        if (!uploadedFiles || uploadedFiles.length === 0 || !templateConfig || !templateType) {
+        if (!files || files.length === 0 || !templateConfig || !templateType) {
             console.error('[processLeaseWithAI] Missing required fields for lease:', leaseToProcess.id);
             setLeases(prev => prev.map(l => l.id === leaseToProcess.id ? { ...l, status: LeaseStatus.FAILED } : l));
             await markLeaseFailedWorkflow(leaseToProcess.id).catch(console.error);
@@ -124,45 +125,22 @@ export const useLeaseManager = (currentUser: User | null, isAuthLoading: boolean
         // fallback to current time ONLY if it doesn't exist (should always exist for persisted leases)
         const processingStartedAt = leaseToProcess.lastSaved ? leaseToProcess.lastSaved.toISOString() : new Date().toISOString();
 
-        console.log(`[PIPELINE TRACE] Calling processLeaseWithAI. leaseId=${leaseToProcess.id}, files=${uploadedFiles.length}, retry=${retryAttempt}, time=${processingStartedAt}`);
+        console.log(`[PIPELINE TRACE] Calling processLeaseWithAI (Client-Side). leaseId=${leaseToProcess.id}, files=${files.length}, retry=${retryAttempt}, time=${processingStartedAt}`);
 
         try {
-            // ── Invoke the server-side Edge Function ─────────────────────────────
-            // We now pass the Supabase Storage paths instead of full Base64 payloads.
-            // This prevents PayloadTooLarge errors for large PDFs.
-            console.log(`[PIPELINE TRACE] Invoking supabase edge function 'process-lease'...`);
-            const { data, error: fnError } = await supabase.functions.invoke('process-lease', {
-                body: {
-                    leaseId: leaseToProcess.id,
-                    files: uploadedFiles,
-                    templateConfig,
-                    templateType,
-                    processingMode: leaseToProcess.processingMode,
-                    processingStartedAt,
-                },
-            });
-
-            if (fnError) {
-                console.error(`[PIPELINE ERROR] Edge Function invocation failed for leaseId=${leaseToProcess.id}:`, fnError);
-                throw new Error(fnError.message || 'Edge Function invocation failed');
-            }
+            // ── Invoke the client-side Gemini processor ─────────────────────────────
+            console.log(`[PIPELINE TRACE] Invoking client-side Gemini API...`);
+            const data = await processLeaseClientSide(leaseToProcess, files);
 
             if (!data?.success) {
-                if (data?.error === 'CONFLICT') {
-                    console.log(`[PIPELINE TRACE] AI results discarded for leaseId=${leaseToProcess.id} due to CONFLICT`);
-                    setNotification({ type: 'error', message: 'AI results discarded: lease was edited during processing.' });
-                    if (currentUser) {
-                        const refreshed = await fetchLeasesAPI(currentUser);
-                        setLeases(refreshed);
-                    }
-                    return;
-                }
-                console.error(`[PIPELINE ERROR] Edge Function returned failure flag for leaseId=${leaseToProcess.id}:`, data?.error);
-                throw new Error(data?.error || 'Unknown error from Edge Function');
+                console.error(`[PIPELINE ERROR] Gemini API returned failure flag for leaseId=${leaseToProcess.id}:`, data?.error);
+                throw new Error(data?.error || 'Unknown error from Gemini API');
             }
 
-            console.log(`[PIPELINE TRACE] Edge Function returned success for leaseId=${leaseToProcess.id}. Patching local state.`);
-            // ── Patch local state with results from Edge Function ─────
+
+
+            console.log(`[PIPELINE TRACE] Gemini returned success for leaseId=${leaseToProcess.id}. Patching local state.`);
+            // ── Patch local state with results from Gemini ─────
             const localUpdates: Partial<Lease> = {
                 status: leaseToProcess.processingMode === 'human' ? LeaseStatus.IN_REVIEW : LeaseStatus.ABSTRACTED,
                 abstractedData: data.abstractedData,
@@ -170,10 +148,12 @@ export const useLeaseManager = (currentUser: User | null, isAuthLoading: boolean
                 workflowStage: leaseToProcess.processingMode === 'human'
                     ? ('R1_PENDING' as WorkflowStage)
                     : ('COMPLETED' as WorkflowStage),
-                aiModelLatency: data.aiModelLatency,
             };
 
             setLeases(prev => prev.map(l => l.id !== leaseToProcess.id ? l : { ...l, ...localUpdates }));
+
+            // Persist AI results to mock DB so it stays in sync
+            await updateLeaseAPI(leaseToProcess.id, localUpdates).catch(console.error);
 
         } catch (error: any) {
             console.error('[PIPELINE ERROR] [processLeaseWithAI] Exception caught:', error);
@@ -182,7 +162,7 @@ export const useLeaseManager = (currentUser: User | null, isAuthLoading: boolean
             if (retryAttempt < 1) {
                 console.warn(`[PIPELINE TRACE] Retrying (attempt ${retryAttempt + 1}/1) for leaseId=${leaseToProcess.id}`);
                 await new Promise(r => setTimeout(r, 3000));
-                return processLeaseWithAI(leaseToProcess, uploadedFiles, retryAttempt + 1);
+                return processLeaseWithAI(leaseToProcess, files, retryAttempt + 1);
             }
 
             // All retries exhausted — marking as failed deterministically
@@ -192,18 +172,6 @@ export const useLeaseManager = (currentUser: User | null, isAuthLoading: boolean
             // Critical fix: Ensure lease does not become stuck in "Processing" UI state
             setLeases(prev => prev.map(l => l.id === leaseToProcess.id ? { ...l, status: LeaseStatus.FAILED } : l));
             await markLeaseFailedWorkflow(leaseToProcess.id).catch(e => console.error('[PIPELINE ERROR] DB fallback failed:', e));
-        } finally {
-            // ── Safety net: always re-fetch authoritative state from DB ──────────
-            // This catches the case where the Edge Function succeeded server-side
-            // but the response timed out on the client.
-            if (currentUser) {
-                try {
-                    const refreshed = await fetchLeasesAPI(currentUser);
-                    setLeases(refreshed);
-                } catch (e) {
-                    console.warn('[processLeaseWithAI] Post-processing re-fetch failed:', e);
-                }
-            }
         }
     }, [currentUser]);
 
@@ -211,15 +179,11 @@ export const useLeaseManager = (currentUser: User | null, isAuthLoading: boolean
         const leaseToUpdate = leases.find(l => l.id === leaseId);
         if (!leaseToUpdate) return;
 
-        // SECURITY: Verify the caller is actually assigned to this lease
+        // SECURITY: Simplified validation for user-driven workflow
         if (currentUser) {
-            const isAssignedReviewer =
-                leaseToUpdate.reviewer?.id === currentUser.id ||
-                leaseToUpdate.reviewerR2?.id === currentUser.id ||
-                currentUser.role === Role.ADMIN ||
-                currentUser.role === Role.SUPER_ADMIN;
+            const isAssignedReviewer = leaseToUpdate.user?.email === currentUser.email;
             if (!isAssignedReviewer) {
-                console.warn('[SECURITY] handleSaveDraft blocked: user is not the assigned reviewer.');
+                console.warn('[SECURITY] handleSaveDraft blocked: user is not the owner.');
                 return;
             }
         }
@@ -257,17 +221,14 @@ export const useLeaseManager = (currentUser: User | null, isAuthLoading: boolean
             // AUTHORITATIVE: Delegate to service-layer workflow function
             await submitReviewWorkflow(
                 leaseId,
-                currentUser.id,
-                currentUser.role,
                 finalData,
                 notes,
                 timeSpent,
-                isR2,
                 !!skipR2
             );
 
             // Derive local state updates from the known outcome
-            const isCompleting = isR2 || !!skipR2;
+            const isCompleting = true; // Always skip R2 for single-pass workflow
             const localUpdates: Partial<Lease> = {
                 abstractedData: finalData,
                 lastSaved: new Date(),
@@ -381,12 +342,13 @@ export const useLeaseManager = (currentUser: User | null, isAuthLoading: boolean
             abstractedData: [],
             paidRentEvents: [],
             chatHistory: [],
+            user: currentUser,
         } as any;
 
         setLeases(prev => [tempLease, ...prev]);
 
         try {
-            const createdLease = await createLeaseAPI(leaseData as any, currentUser.id, files);
+            const createdLease = await createLeaseAPI({ ...leaseData, user: currentUser } as any, currentUser.id, files);
             if (!createdLease) throw new Error("Failed to create lease record");
 
             // Replace placeholder with authoritative server data
@@ -407,7 +369,7 @@ export const useLeaseManager = (currentUser: User | null, isAuthLoading: boolean
 
             console.log(`[PIPELINE TRACE] Continuing to AI Processing for leaseId=${createdLease.id}`);
             // Start async processes with successfully uploaded file references
-            processLeaseWithAI(createdLease, uploadedFiles);
+            processLeaseWithAI(createdLease, files);
 
             return createdLease;
         } catch (e) {
@@ -430,7 +392,7 @@ export const useLeaseManager = (currentUser: User | null, isAuthLoading: boolean
             // AUTHORITATIVE: Await backend confirmation and merge the true returned state
             const updatedData = await updateLeaseAPI(leaseId, { paidRentEvents: newPaidEvents });
             if (updatedData) {
-                setLeases(prev => prev.map(l => l.id === leaseId ? { ...l, paidRentEvents: updatedData.paid_rent_events || newPaidEvents } : l));
+                setLeases(prev => prev.map(l => l.id === leaseId ? { ...l, paidRentEvents: updatedData.paidRentEvents || newPaidEvents } : l));
             }
         } catch (e) {
             console.error("Failed to mark rent as paid:", e);

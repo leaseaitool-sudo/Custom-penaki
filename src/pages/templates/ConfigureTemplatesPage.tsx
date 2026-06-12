@@ -14,7 +14,7 @@ interface ConfigureTemplatesPageProps {
 const TemplateSelector: React.FC<{
     selectedValue: string;
     savedTemplates?: SavedTemplate[];
-    onChange: (value: 'us' | 'eu' | string) => void;
+    onChange: (value: 'us' | 'eu' | 'custom' | string) => void;
 }> = ({ selectedValue, savedTemplates, onChange }) => {
     return (
         <div className="flex flex-col gap-2">
@@ -42,7 +42,7 @@ const TemplateSelector: React.FC<{
 export const ConfigureTemplatesPage: React.FC<ConfigureTemplatesPageProps> = ({ initialLeases, savedTemplates, onContinue, onBack }) => {
     const [leases, setLeases] = useState<PendingIndividualLeaseConfig[]>(initialLeases);
 
-    const handleTemplateChange = (fileName: string, templateType: 'us' | 'eu' | string) => {
+    const handleTemplateChange = (fileName: string, templateType: 'us' | 'eu' | 'custom' | string) => {
         setLeases(prevLeases =>
             prevLeases.map(lease =>
                 lease.file.name === fileName ? { ...lease, templateType: templateType as any } : lease

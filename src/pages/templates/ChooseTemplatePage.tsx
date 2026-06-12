@@ -7,7 +7,7 @@ import { DocumentTextIcon } from '@/shared/ui/Icons/DocumentTextIcon';
 import { ClockIcon } from '@/shared/ui/Icons/ClockIcon';
 
 interface ChooseTemplatePageProps {
-  onSelectTemplate: (templateType: 'us' | 'eu') => void;
+  onSelectTemplate: (templateType: 'us' | 'eu' | 'custom') => void;
   onSelectSavedTemplate: (template: SavedTemplate) => void;
   savedTemplates?: SavedTemplate[];
   onBack: () => void;
@@ -72,7 +72,7 @@ export const ChooseTemplatePage: React.FC<ChooseTemplatePageProps> = ({ onSelect
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <TemplateCard
           title="US Template (Detailed)"
           description="Includes all lease sections for US: Landlord, Tenant, Rent, Options, Charges, Insurance, and more."
@@ -85,6 +85,12 @@ export const ChooseTemplatePage: React.FC<ChooseTemplatePageProps> = ({ onSelect
           buttonText="Use UK/EU Template"
           onClick={() => onSelectTemplate('eu')}
           variant="secondary"
+        />
+        <TemplateCard
+          title="Custom Template"
+          description="Modeled specifically from the provided lease abstract schema. Includes Space, Recovery, Options, and Clauses."
+          buttonText="Use Custom Template"
+          onClick={() => onSelectTemplate('custom')}
         />
       </div>
       

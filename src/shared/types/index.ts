@@ -16,9 +16,6 @@ export enum ReviewStatus {
 
 export enum Role {
   USER,
-  ADMIN, // Deploy Admin / Org Admin
-  REVIEWER,
-  SUPER_ADMIN, // Root Access
 }
 
 export type WorkflowStage =
@@ -51,27 +48,7 @@ export type View =
   | 'profile'
   | 'terms'
   | 'privacy'
-  | 'admin-dashboard'
-  | 'admin-analytics'
-  | 'admin-total-activity'
-  | 'admin-review-queue'
-  | 'admin-workbench'
-  | 'admin-clients'
-  | 'admin-completed-reviews'
-  | 'admin-client-detail'
-  | 'admin-ai-leases'
-  | 'admin-bookings'
-  | 'admin-reviewers'
-  | 'admin-amendments'
-  | 'admin-chats'
-  | 'admin-lease-database'
-  | 'deploy-admins'
-  | 'org-detail'
-  | 'reviewer-dashboard'
-  | 'reviewer-workbench'
-  | 'reviewer-activity'
-  | 'reviewer-amendments'
-  | 'reviewer-chats'
+  | 'workbench'
   | 'product-asset-mapping'
   | 'product-critical-events'
   | 'product-ai-abstraction'
@@ -99,7 +76,7 @@ export interface SelectionSection {
 export interface SavedTemplate {
   id: string;
   name: string;
-  type: 'us' | 'eu';
+  type: 'us' | 'eu' | 'custom';
   sections: SelectionSection[];
   dateCreated: Date;
   lastModified: Date;
@@ -228,7 +205,7 @@ export interface Lease {
   escalationNotes?: string;
 
   templateConfig?: SelectionSection[];
-  templateType?: 'us' | 'eu';
+  templateType?: 'us' | 'eu' | 'custom';
   fileObjects?: File[];
 
   amendments?: LeaseAmendment[];
@@ -248,7 +225,14 @@ export interface PendingIndividualLeaseConfig {
   file: File;
   name: string;
   processingMode: 'ai' | 'human';
-  templateType: 'us' | 'eu';
+  templateType: 'us' | 'eu' | 'custom';
+}
+
+export interface PendingLease {
+  files: File[];
+  name: string;
+  processingMode: 'ai' | 'human';
+  templateType?: 'us' | 'eu' | 'custom';
 }
 
 export interface TemplateSet {

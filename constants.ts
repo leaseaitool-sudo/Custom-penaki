@@ -80,7 +80,7 @@ Total Gross Area = sum from lease.
 Annual Total Rent = stated total (no inference).
 
 LEASE DETAILS  
-Type = gross/net/triple net. (always fill)
+Type = Gross/Net/Double Net/Triple Net (N, NN, NNN). (always fill)
 
 TERM OF LEASE  
 Commencement = actual lease start.  
@@ -108,6 +108,7 @@ Interval = spacing.
 Penalty = early termination cost.
 
 RENEWAL OPTION  
+(Note: Pick ALL options present in the lease, not just termination and renewal)
 Has Renewal = Yes/No.  
 Duration = renewal length.  
 Rent Increase = stated rule.
@@ -175,7 +176,7 @@ CRITICAL RULES:
 1.  **Code-Based Keying**: You MUST use the exact numerical codes (e.g., "1.2.0") provided in the legend as the keys for your JSON output. Do NOT use field names (e.g., "Landlord Name") as keys.
 2.  **Explicit Nulls**: If a field is not found in the document, you MUST return it with a value of null. Do NOT omit fields.
 3.  **Exact Extraction**: Extract values exactly as they appear in the text. Do not summarize or paraphrase unless instructed.
-4.  **Date Formatting**: Convert all dates to YYYY-MM-DD format if possible. If ambiguous, keep original text.
+4.  **Date Formatting**: Convert all dates to MM-DD-YYYY format if possible. If ambiguous, keep original text.
 5.  **Page Numbers**: You MUST provide the 'page' number where the information was found.
 6.  **Snippets**: You MUST provide a short 'snippet' of the text that contains the extracted value for verification.
 7.  **Arrays**: The output must be a flat JSON Array of objects. Each object represents one field.

@@ -89,15 +89,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isO
     setIsOpen(false);
   };
 
-  const isSuperAdmin = currentUser?.role === Role.SUPER_ADMIN;
-  const isDeployAdmin = currentUser?.role === Role.ADMIN;
-  const isAdmin = isSuperAdmin || isDeployAdmin;
-  const isReviewer = currentUser?.role === Role.REVIEWER;
   const isAppMode = !!currentUser;
 
   // Calculate Active Reminders (Due Today or < 5 Days)
   const reminderCount = useMemo(() => {
-    if (isAdmin || isReviewer) return 0;
     let count = 0;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -125,56 +120,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isO
       if (hasRentData) count++;
     });
     return count;
-  }, [leases, isAdmin, isReviewer]);
+  }, [leases]);
 
   const renderNavItems = () => {
-    if (isAdmin) {
-      return (
-        <>
-          {isSuperAdmin && (
-            <>
-              <NavItem view="deploy-admins" label="Deploy Admins" icon={<BuildingOfficeIcon className="w-6 h-6 text-purple-600" />} activeView={activeView} onClick={handleNavigation} />
-              <div className="my-2 border-t border-border/60 mx-3"></div>
-            </>
-          )}
-          <NavItem view="admin-dashboard" label="Dashboard" icon={<ChartBarIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="admin-lease-database" label="Lease Database" icon={<CircleStackIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="admin-analytics" label="Analytics" icon={<PresentationChartLineIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="admin-total-activity" label="Total Activity" icon={<TableCellsIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="admin-chats" label="Client Communications" icon={<ChatBubbleLeftRightIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
 
-          <NavItem view="admin-review-queue" label="Review Queue" icon={<ClipboardDocumentListIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="admin-amendments" label="Amendments" icon={<DocumentPlusIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="admin-clients" label="Client Management" icon={<UsersIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="admin-reviewers" label="Team Management" icon={<BriefcaseIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="admin-ai-leases" label="AI Leases" icon={<DocumentTextIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="admin-completed-reviews" label="Completed Reviews" icon={<CheckBadgeIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-        </>
-      );
-    }
-    if (isReviewer) {
-      return (
-        <>
-          <NavItem view="reviewer-dashboard" label="Reviewer Desk" icon={<BriefcaseIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="reviewer-chats" label="My Chats" icon={<ChatBubbleLeftRightIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="reviewer-amendments" label="Amendment Queue" icon={<DocumentPlusIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="reviewer-activity" label="My Activity" icon={<CheckBadgeIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-        </>
-      );
-    }
 
     if (isAppMode) {
       return (
         <>
           <NavItem view="abstract" label="Abstract Lease" icon={<PlusCircleIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="portfolio" label="Portfolio" icon={<PresentationChartLineIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="lease-summaries" label="Summaries" icon={<DocumentTextIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="assets" label="Assets" icon={<BuildingOfficeIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
           <NavItem view="history" label="My Leases" icon={<ListBulletIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="locations" label="Locations" icon={<MapPinIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-          <NavItem view="entities" label="Landlords & Tenants" icon={<UsersIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
-
-          <NavItem view="client-chats" label="Messages" icon={<ChatBubbleLeftRightIcon className="w-6 h-6" />} activeView={activeView} onClick={handleNavigation} />
         </>
       );
     }
@@ -259,9 +214,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isO
                 <LogoIcon variant="horizontal" className="h-8" />
               )}
               <div className="flex flex-col ml-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
-                {isSuperAdmin && <span className="text-[10px] font-bold bg-purple-600 text-white px-1.5 py-0.5 rounded shadow-sm">SUPER ADMIN</span>}
-                {isDeployAdmin && <span className="text-[10px] font-bold bg-primary text-white px-1.5 py-0.5 rounded shadow-sm">ADMIN</span>}
-                {isReviewer && <span className="text-[10px] font-bold bg-secondary text-white px-1.5 py-0.5 rounded shadow-sm">REVIEWER</span>}
               </div>
             </div>
 

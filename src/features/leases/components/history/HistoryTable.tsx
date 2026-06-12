@@ -26,6 +26,7 @@ interface HistoryTableProps {
   onRetry: (lease: Lease) => void;
   onAddAmendment: (lease: Lease) => void;
   onOpenInsights: (lease: Lease) => void;
+  onOpenWorkbench: (lease: Lease) => void;
 }
 
 const StatusBadge: React.FC<{ status: LeaseStatus }> = ({ status }) => {
@@ -157,7 +158,9 @@ const ExportAllDropdown: React.FC<{ onExportExcel: () => void; disabled: boolean
     )
 }
 
-export const HistoryTable: React.FC<HistoryTableProps> = ({ leases, onView, onDownloadExcel, onDownloadAllExcel, onDownloadPdf, onChat, onRetry, onAddAmendment, onOpenInsights }) => {
+export const HistoryTable: React.FC<HistoryTableProps> = ({ 
+  leases, onView, onDownloadExcel, onDownloadAllExcel, onDownloadPdf, onChat, onRetry, onAddAmendment, onOpenInsights, onOpenWorkbench
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Expired'>('All');
   const [startDate, setStartDate] = useState('');
@@ -325,7 +328,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ leases, onView, onDo
                         <ProcessingModeBadge processingMode={lease.processingMode} />
                       </div>
                       <div className="flex items-center text-text-light mt-1 gap-3">
-                        {lease.documents.length > 1 && (
+                        {lease.documents?.length > 1 && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-100">
                                 {lease.documents.length} files
                             </span>
@@ -357,14 +360,23 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({ leases, onView, onDo
                             </button>
                         ) : (
                             <>
-                                {/* Primary View Button */}
-                                <button 
-                                    onClick={() => onView(lease)} 
-                                    disabled={lease.status !== LeaseStatus.ABSTRACTED} 
-                                    className="flex items-center gap-1.5 bg-primary text-white hover:bg-primary-focus px-4 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <EyeIcon className="h-4 w-4" /> View
-                                </button>
+                                {/* Primary View / Workbench Button */}
+                                {lease.status === LeaseStatus.IN_REVIEW || lease.status === LeaseStatus.ABSTRACTED ? (
+                                    <button 
+                                        onClick={() => onOpenWorkbench(lease)} 
+                                        className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all ${lease.status === LeaseStatus.ABSTRACTED ? 'bg-primary text-white hover:bg-primary-focus' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                                    >
+                                        <PencilSquareIcon className="h-4 w-4" /> {lease.status === LeaseStatus.ABSTRACTED ? 'Edit' : 'Workbench'}
+                                    </button>
+                                ) : (
+                                    <button 
+                                        onClick={() => onView(lease)} 
+                                        disabled={lease.status !== LeaseStatus.AMENDMENT_REVIEW} 
+                                        className="flex items-center gap-1.5 bg-primary text-white hover:bg-primary-focus px-4 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <EyeIcon className="h-4 w-4" /> View
+                                    </button>
+                                )}
                                 
                                 {lease.status === LeaseStatus.ABSTRACTED && (
                                     <>

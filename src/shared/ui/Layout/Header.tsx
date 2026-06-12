@@ -238,13 +238,6 @@ export const Header: React.FC<HeaderProps> = ({ activeView, user, onProfileClick
                 >
                   Login
                 </button>
-                <button
-                  onClick={onBookDemo}
-                  className="text-xs sm:text-sm md:text-base font-bold text-white bg-primary hover:bg-primary-focus hover:shadow-lg transition-all duration-200 px-5 py-2.5 md:px-6 md:py-3 rounded-full shadow-sm transform hover:-translate-y-0.5 active:scale-95 whitespace-nowrap"
-                >
-                  Request Demo
-                </button>
-
                 {/* Menu button - RIGHT (Only visible on Mobile when Logged OUT - Marketing) */}
                 <button
                   onClick={onMenuClick}

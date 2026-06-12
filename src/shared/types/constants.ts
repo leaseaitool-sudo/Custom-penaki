@@ -165,6 +165,28 @@ Go Dark Clause = exists/not stated.
 
 WAIVER OF SUBROGATION  
 Extract clause exactly.`;
+export const customTemplateGuidelines = `CUSTOM TEMPLATE STRICT RULES
+Scope: Ignore any extra fields from the document (like management fees) unless they fit in the requested sections.
+Tabular Data: Sections like Space, Rent Schedule, Recovery, Late Fee, Options, and Clauses MUST be extracted as an array of multiple distinct rows. Do not combine them.
+
+CLAUSES SECTION STRICT RULES:
+1. You MUST extract EVERY SINGLE provision, rule, and clause from the lease (typically 30 to 60 clauses per lease). DO NOT STOP AT 4 OR 5 CLAUSES. Create a new InstanceID (0, 1, 2, 3...) for EVERY distinct clause!
+2. Reference Field: The "Reference" field MUST ONLY BE THE EXACT PAGE NUMBER (e.g., "Page 14" or "14"). DO NOT output section numbers like "6. (a)". If you output a section number, you fail.
+3. Description Field: The "Description" field MUST be an exact, word-for-word, verbatim copy of the entire paragraph(s) from the lease. DO NOT summarize, DO NOT truncate, DO NOT paraphrase. Copy the text exactly.
+
+Specific Column Guidelines:
+- LEASE INFORMATION > Type: Must be one of: "Net lease", "double net lease", or "triple net lease(N,NN,NNN)".
+- LEASE INFORMATION > Status: Must be one of: "ACTIVE", "EXPIRED", or "MONTH-TO-MONTH".
+- LEASE INFORMATION > Lease: Capture LEASE NAME (ORIGINAL LEASE/AMENDMENT) only.
+- LEASE INFORMATION > Property: Capture ONLY PROPERTY NAME.
+- RENT SCHEDULE: Must ONLY capture rent. Do not capture operating expenses, CAM, or other charges here.
+- RECOVERY: Only capture these categories: "CAM", "TAXES", "INSURANCE", "Operating Expense".
+- OPTIONS: Only capture these categories: "RENEWAL OPTION", "TERMINATION OPTION".
+- Everything outside of the specific requested options or recoveries MUST go to the CLAUSES section with descriptions.
+
+Dynamic Clause Extraction: You MUST extract ALL of the following (if present) as separate CLAUSES instances, plus any others:
+Premises details, Primary term, Rent Details, Payment Details, Renewal Option, Late Fee Clause, Additional Rent Clause, Security Deposit clause, Termination Rights, Operating Expenses, Condition of premises, Uses permitted & restrictions, Parking Clauses, Fire Extinguisher and Exit Sign, Signage Clause, Alteration Clause, ROFO/ROFR Option, Audit Clause, Lanlord's Work, LL Repair & Maintenance clause, Tenant Repair & Maintenance clause, Insurance Requirement clause, Waiver of Subrogration, Taxes Clause, Utility Clause, Liability Clause, Indemnification, Casuality Clause, Landlord Entry Rights, Condemnation, Failure by Tenant to Pay, Assignment / Sublease clause, Environmental/Hazardous Materials, Holdover/Holding Over, Estoppel Certificates, Subordination Non- Disturbance, Default Clause, Quiet Enjoyment Clause, Representations of Tenant, Respresentations of landlord, Guarantor, Brokerage Clause, Graduated Charges Details, Indexation Details, Expansion/Relocation Clause, Miscellaneous Clause, Amendment, Notice Clause.`;
+
 
 export const systemInstructionBase = `You are a meticulous legal analyst AI. Your task is to extract specific information from a commercial real estate lease document and structure it according to a strict JSON protocol.
 

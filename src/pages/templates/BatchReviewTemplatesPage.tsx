@@ -27,7 +27,7 @@ export const BatchReviewTemplatesPage: React.FC<BatchReviewTemplatesPageProps> =
   const [newTemplateName, setNewTemplateName] = useState('');
 
   // Helper to sort sections based on canonical order
-  const sortSections = (sections: SelectionSection[], type: 'us' | 'eu') => {
+  const sortSections = (sections: SelectionSection[], type: 'us' | 'eu' | 'custom') => {
       const canonicalOrder = getCanonicalSectionOrder(type);
       
       return [...sections].sort((a, b) => {

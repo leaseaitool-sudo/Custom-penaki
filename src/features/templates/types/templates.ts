@@ -612,13 +612,93 @@ const getEuSections = (): SelectionSection[] => [
     },
 ];
 
-export const getCanonicalSectionOrder = (type: 'us' | 'eu'): string[] => {
-    const sections = type === 'us' ? getUsSections() : getEuSections();
+const getCustomSections = (): SelectionSection[] => [
+    {
+        id: 'cst_lease_information', title: 'LEASE INFORMATION', fields: [
+            { id: 'cst_li_type', label: 'Type', isSelected: true },
+            { id: 'cst_li_status', label: 'Status', isSelected: true },
+            { id: 'cst_li_duration', label: 'Duration', isSelected: true },
+            { id: 'cst_li_from', label: 'From', isSelected: true, isDate: true },
+            { id: 'cst_li_to', label: 'To', isSelected: true, isDate: true },
+            { id: 'cst_li_effective_date', label: 'Effective Date', isSelected: true, isDate: true },
+            { id: 'cst_li_contracted_area', label: 'Contracted Area', isSelected: true },
+            { id: 'cst_li_lease', label: 'Lease', isSelected: true },
+            { id: 'cst_li_property', label: 'Property', isSelected: true },
+            { id: 'cst_li_prop_address', label: 'Prop. Address', isSelected: true },
+            { id: 'cst_li_landlord', label: 'Landlord', isSelected: true },
+            { id: 'cst_li_l_address', label: 'L. Address', isSelected: true },
+            { id: 'cst_li_tenant', label: 'Tenant', isSelected: true },
+            { id: 'cst_li_t_address', label: 'T. Address', isSelected: true },
+        ]
+    },
+    {
+        id: 'cst_space', title: 'SPACE', fields: [
+            { id: 'cst_sp_unit', label: 'Unit', isSelected: true },
+            { id: 'cst_sp_floor', label: 'Floor', isSelected: true },
+            { id: 'cst_sp_status', label: 'Status', isSelected: true },
+            { id: 'cst_sp_area', label: 'Area', isSelected: true },
+        ]
+    },
+    {
+        id: 'cst_charge_schedules', title: 'RENT SCHEDULE', fields: [
+            { id: 'cst_cs_charge_type', label: 'Charge type', isSelected: true },
+            { id: 'cst_cs_description', label: 'Description', isSelected: true },
+            { id: 'cst_cs_date_from', label: 'Date From', isSelected: true, isDate: true },
+            { id: 'cst_cs_date_to', label: 'Date To', isSelected: true, isDate: true },
+            { id: 'cst_cs_monthly_amt', label: 'Monthly Amt', isSelected: true },
+            { id: 'cst_cs_annual_amt', label: 'Annual Amt', isSelected: true },
+            { id: 'cst_cs_area', label: 'Area', isSelected: true },
+            { id: 'cst_cs_amt_per_area', label: 'Amt Per Area', isSelected: true },
+        ]
+    },
+    {
+        id: 'cst_recovery', title: 'RECOVERY', fields: [
+            { id: 'cst_rec_type', label: 'Recovery Type', isSelected: true },
+            { id: 'cst_rec_description', label: 'Description', isSelected: true },
+            { id: 'cst_rec_from', label: 'From', isSelected: true, isDate: true },
+            { id: 'cst_rec_to', label: 'To', isSelected: true, isDate: true },
+            { id: 'cst_rec_eoy_month', label: 'EOY Month', isSelected: true },
+            { id: 'cst_rec_base_year', label: 'Base Year', isSelected: true },
+            { id: 'cst_rec_pro_rata', label: 'Pro Rata %', isSelected: true },
+            { id: 'cst_rec_cam_cap', label: 'CAM Cap%', isSelected: true },
+        ]
+    },
+    {
+        id: 'cst_late_fee', title: 'LATE FEE', fields: [
+            { id: 'cst_lf_grace_period', label: 'Grace Period', isSelected: true },
+            { id: 'cst_lf_type', label: 'Late Fee Type', isSelected: true },
+            { id: 'cst_lf_amount', label: 'Late Fee Amount / %', isSelected: true },
+            { id: 'cst_lf_daily_fee', label: 'Daily Fee', isSelected: true },
+        ]
+    },
+    {
+        id: 'cst_options', title: 'OPTIONS', fields: [
+            { id: 'cst_opt_type', label: 'Option Type', isSelected: true },
+            { id: 'cst_opt_status', label: 'Status', isSelected: true },
+            { id: 'cst_opt_start_date', label: 'Start Date', isSelected: true, isDate: true },
+            { id: 'cst_opt_expiration_date', label: 'Expiration Date', isSelected: true, isDate: true },
+            { id: 'cst_opt_notice_date', label: 'Notice Date', isSelected: true, isDate: true },
+            { id: 'cst_opt_duration', label: 'Duration', isSelected: true },
+
+            { id: 'cst_opt_notes', label: 'Notes', isSelected: true },
+        ]
+    },
+    {
+        id: 'cst_clauses', title: 'CLAUSES', fields: [
+            { id: 'cst_cl_name', label: 'Name', isSelected: true },
+            { id: 'cst_cl_reference', label: 'Reference', isSelected: true },
+            { id: 'cst_cl_description', label: 'Description', isSelected: true },
+        ]
+    },
+];
+
+export const getCanonicalSectionOrder = (type: 'us' | 'eu' | 'custom'): string[] => {
+    const sections = type === 'us' ? getUsSections() : type === 'eu' ? getEuSections() : getCustomSections();
     return sections.map(s => s.id);
 };
 
-export const generateTemplateData = (templateType: 'us' | 'eu'): { main: SelectionSection[], optional: SelectionSection[] } => {
-    const sections = templateType === 'us' ? getUsSections() : getEuSections();
+export const generateTemplateData = (templateType: 'us' | 'eu' | 'custom'): { main: SelectionSection[], optional: SelectionSection[] } => {
+    const sections = templateType === 'us' ? getUsSections() : templateType === 'eu' ? getEuSections() : getCustomSections();
     
     const optionalSectionTitles = templateType === 'us' ? new Set([
         'Relocation Option',

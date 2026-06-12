@@ -21,7 +21,7 @@ import { ChevronDownIcon } from '@/shared/ui/Icons/ChevronDownIcon';
 import { PdfViewer, NavigationTarget, SnippetSource } from '@/widgets/pdf-viewer/PdfViewer';
 import { CalendarIcon } from '@/shared/ui/Icons/CalendarIcon';
 import { ChatBubbleLeftEllipsisIcon } from '@/shared/ui/Icons/ChatBubbleLeftEllipsisIcon';
-import { useWorkbench } from '@/features/admin/hooks/useWorkbench';
+import { useWorkbench } from '@/features/leases/hooks/useWorkbench';
 
 interface WorkbenchProps {
     mode: 'admin' | 'reviewer';
@@ -175,7 +175,7 @@ export const Workbench: React.FC<WorkbenchProps> = ({ mode, lease, onBack, onSav
 
     const formContainerRef = useRef<HTMLDivElement>(null);
     const sidebarRef = useRef<HTMLElement>(null);
-    const isBundle = useMemo(() => lease && lease.documents.length > 1, [lease]);
+    const isBundle = useMemo(() => lease && lease.documents?.length > 1, [lease]);
 
     const isAdmin = mode === 'admin';
 
@@ -353,7 +353,7 @@ export const Workbench: React.FC<WorkbenchProps> = ({ mode, lease, onBack, onSav
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-80px)] bg-surface">
+        <div className="flex flex-col flex-1 min-h-0 bg-surface">
             {/* Header */}
             <div className="h-16 bg-white border-b border-border flex items-center justify-between px-6 flex-shrink-0 shadow-sm z-20">
                 <div className="flex items-center gap-4 flex-1">
@@ -378,7 +378,7 @@ export const Workbench: React.FC<WorkbenchProps> = ({ mode, lease, onBack, onSav
                 </div>
             </div>
 
-            <div className="flex flex-1 overflow-hidden relative">
+            <div className="flex flex-1 min-h-0 overflow-hidden relative">
                 {/* Sidebar Navigation */}
                 {!isFocusMode && (
                     <nav ref={sidebarRef} className="flex-shrink-0 border-r border-border bg-surface-muted/50 backdrop-blur-sm overflow-y-auto overflow-x-hidden hidden md:block transition-[width] duration-300 ease-out w-16 hover:w-64 group z-20 hover:shadow-xl flex flex-col">
@@ -398,7 +398,7 @@ export const Workbench: React.FC<WorkbenchProps> = ({ mode, lease, onBack, onSav
                 )}
 
                 {/* Form Area */}
-                <div className={`${isFocusMode ? 'w-1/2 max-w-3xl' : 'w-[500px]'} transition-all duration-300 flex-shrink-0 flex flex-col border-r border-border bg-white z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]`}>
+                <div className={`${isFocusMode ? 'w-1/2 max-w-3xl' : 'w-[500px]'} transition-all duration-300 flex-shrink-0 flex flex-col min-h-0 border-r border-border bg-white z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]`}>
                     <div className="px-6 py-4 border-b border-border bg-white/95 backdrop-blur z-10 sticky top-0">
                         <div className="flex justify-between items-end mb-2"><div><h3 className="text-sm font-bold text-text-main">{isR2Active ? 'Verification Progress (R2)' : 'Review Progress'}</h3><p className="text-xs text-text-light">{progressStats.verified} of {progressStats.total} fields verified</p></div><span className="text-xl font-bold text-primary">{Math.round(progressStats.percent)}%</span></div>
                         <ProgressBar progress={progressStats.percent} />

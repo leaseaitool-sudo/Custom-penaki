@@ -1,5 +1,6 @@
 
 import { SelectionSection, AbstractedData, AbstractedSection } from '@/shared/types';
+import { systemInstructionBase, customTemplateGuidelines, usTemplateGuidelines } from '@/shared/types/constants';
 
 export interface ProtocolItem {
     code: string;
@@ -13,8 +14,16 @@ export interface ProtocolItem {
  * Generates a numerical legend string to instruct the AI on which codes correspond to which fields.
  * Format: SectionID.FieldID.InstanceID
  */
-export const generateProtocolPrompt = (template: SelectionSection[]): string => {
-    let prompt = "OUTPUT PROTOCOL:\n";
+export const generateProtocolPrompt = (template: SelectionSection[], templateType?: string): string => {
+    let prompt = systemInstructionBase + "\n\n";
+
+    if (templateType === 'custom') {
+        prompt += customTemplateGuidelines + "\n\n";
+    } else if (templateType === 'us') {
+        prompt += usTemplateGuidelines + "\n\n";
+    }
+
+    prompt += "OUTPUT PROTOCOL:\n";
     prompt += "You must output a JSON Array of objects. Each object represents an extracted field.\n";
     prompt += "Use the 'code' property to identify the field based on the mapping below.\n";
     prompt += "Format of code: 'SectionID.FieldID.InstanceID'\n";
