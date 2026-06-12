@@ -368,9 +368,26 @@ export const useLeaseManager = (currentUser: User | null, isAuthLoading: boolean
                 return createdLease;
             }
 
-            console.log(`[PIPELINE TRACE] Continuing to AI Processing for leaseId=${createdLease.id}`);
-            // Start async processes with successfully uploaded file references
-            processLeaseWithAI(createdLease, files);
+            if (createdLease.processingMode === 'human') {
+                console.log(`[PIPELINE TRACE] Bypassing AI Processing for Human Review leaseId=${createdLease.id}`);
+                const emptyData = createdLease.templateConfig ? (await import('@/shared/utils/protocolEngine')).rehydrateData([], createdLease.templateConfig) : [];
+                
+                const localUpdates: Partial<Lease> = {
+                    status: LeaseStatus.IN_REVIEW,
+                    abstractedData: emptyData,
+                    reviewStatus: ReviewStatus.PENDING,
+                    workflowStage: 'R1_PENDING' as WorkflowStage,
+                };
+                
+                setLeases(prev => prev.map(l => l.id === createdLease.id ? { ...l, ...localUpdates } : l));
+                await updateLeaseAPI(createdLease.id, localUpdates).catch(console.error);
+                
+                setNotification({ type: 'success', message: 'Lease ready for human review.' });
+            } else {
+                console.log(`[PIPELINE TRACE] Continuing to AI Processing for leaseId=${createdLease.id}`);
+                // Start async processes with successfully uploaded file references
+                processLeaseWithAI(createdLease, files);
+            }
 
             return createdLease;
         } catch (e) {
