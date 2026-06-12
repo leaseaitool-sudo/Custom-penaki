@@ -159,19 +159,18 @@ export const useLeaseManager = (currentUser: User | null, isAuthLoading: boolean
             console.error('[PIPELINE ERROR] [processLeaseWithAI] Exception caught:', error);
 
             // Retry only once (avoid sending the same large PDF 3 times)
-            if (retryAttempt < 1 && isTransientError(error)) {
+            if (retryAttempt < 1) {
                 console.warn(`[PIPELINE TRACE] Retrying (attempt ${retryAttempt + 1}/1) for leaseId=${leaseToProcess.id}`);
                 await new Promise(r => setTimeout(r, 3000));
                 return processLeaseWithAI(leaseToProcess, files, retryAttempt + 1);
             }
 
             // All retries exhausted — marking as failed deterministically
-            const errorMsg = error?.message || 'Unknown error';
             console.error('[PIPELINE ERROR] Client-side retries exhausted for leaseId:', leaseToProcess.id);
-            setNotification({ type: 'error', message: `Processing failed: ${errorMsg}` });
+            setNotification({ type: 'error', message: 'Processing permanently failed after retries.' });
             
             // Critical fix: Ensure lease does not become stuck in "Processing" UI state
-            setLeases(prev => prev.map(l => l.id === leaseToProcess.id ? { ...l, status: LeaseStatus.FAILED, reviewerNotes: errorMsg } : l));
+            setLeases(prev => prev.map(l => l.id === leaseToProcess.id ? { ...l, status: LeaseStatus.FAILED } : l));
             await markLeaseFailedWorkflow(leaseToProcess.id).catch(e => console.error('[PIPELINE ERROR] DB fallback failed:', e));
         }
     }, [currentUser]);
@@ -363,31 +362,14 @@ export const useLeaseManager = (currentUser: User | null, isAuthLoading: boolean
             if (!uploadedFiles || uploadedFiles.length === 0) {
                 console.error('[PIPELINE ERROR] All uploads failed for lease:', createdLease.id);
                 await markLeaseFailedWorkflow(createdLease.id).catch(console.error);
-                setLeases(prev => prev.map(l => l.id === createdLease.id ? { ...l, status: LeaseStatus.FAILED, reviewerNotes: 'Upload to storage failed. File might be too large (>50MB) or network error.' } : l));
-                setNotification({ type: 'error', message: `Storage upload failed for ${files[0]?.name || 'document'}.` });
+                setLeases(prev => prev.map(l => l.id === createdLease.id ? { ...l, status: LeaseStatus.FAILED } : l));
+                setNotification({ type: 'error', message: 'Lease created but all document uploads failed.' });
                 return createdLease;
             }
 
-            if (createdLease.processingMode === 'human') {
-                console.log(`[PIPELINE TRACE] Bypassing AI Processing for Human Review leaseId=${createdLease.id}`);
-                const emptyData = createdLease.templateConfig ? (await import('@/shared/utils/protocolEngine')).rehydrateData([], createdLease.templateConfig) : [];
-                
-                const localUpdates: Partial<Lease> = {
-                    status: LeaseStatus.IN_REVIEW,
-                    abstractedData: emptyData,
-                    reviewStatus: ReviewStatus.PENDING,
-                    workflowStage: 'R1_PENDING' as WorkflowStage,
-                };
-                
-                setLeases(prev => prev.map(l => l.id === createdLease.id ? { ...l, ...localUpdates } : l));
-                await updateLeaseAPI(createdLease.id, localUpdates).catch(console.error);
-                
-                setNotification({ type: 'success', message: 'Lease ready for human review.' });
-            } else {
-                console.log(`[PIPELINE TRACE] Continuing to AI Processing for leaseId=${createdLease.id}`);
-                // Start async processes with successfully uploaded file references
-                processLeaseWithAI(createdLease, files);
-            }
+            console.log(`[PIPELINE TRACE] Continuing to AI Processing for leaseId=${createdLease.id}`);
+            // Start async processes with successfully uploaded file references
+            processLeaseWithAI(createdLease, files);
 
             return createdLease;
         } catch (e) {

@@ -29,7 +29,7 @@ export const generateProtocolPrompt = (template: SelectionSection[], templateTyp
     prompt += "Format of code: 'SectionID.FieldID.InstanceID'\n";
     prompt += "- SectionID: The number identifying the section.\n";
     prompt += "- FieldID: The number identifying the field within that section.\n";
-    prompt += "- InstanceID: '0' for the first occurrence. If a section repeats (e.g. multiple Contacts), increment this number (1, 2, etc.). MAXIMUM 5 INSTANCES PER REPEATING SECTION to prevent massive outputs.\n";
+    prompt += "- InstanceID: '0' for the first occurrence. If a section repeats (e.g. multiple Contacts, multiple Rental Units), increment this number (1, 2, etc.) for subsequent instances.\n";
     prompt += "  Example: '1.2.0' is the first instance of field 2 in section 1. '1.2.1' is the second instance.\n\n";
     prompt += "MAPPING LEGEND:\n";
 

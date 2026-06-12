@@ -103,7 +103,6 @@ const callGeminiWithRetry = async (
                 }],
                 config: {
                     responseMimeType: 'application/json',
-                    temperature: 0.1,
                 }
             });
 
@@ -160,32 +159,14 @@ export const processLeaseClientSide = async (lease: Lease, files: File[]): Promi
         // Step 4: Parse JSON response
         console.log(`[AI PIPELINE] Step 4: Parsing JSON response...`);
         let rawItems: any[] = [];
-        
-        const repairJSON = (str: string) => {
-            let clean = str.trim();
-            if (clean.startsWith('```json')) clean = clean.replace(/^```json/, '');
-            if (clean.endsWith('```')) clean = clean.replace(/```$/, '');
-            clean = clean.trim();
-            if (!clean.endsWith(']')) {
-                console.log("[AI PIPELINE] Truncated JSON detected. Attempting repair...");
-                const lastBrace = clean.lastIndexOf('{');
-                const lastBracket = clean.lastIndexOf('}');
-                if (lastBrace > lastBracket) clean = clean.substring(0, lastBrace);
-                clean = clean.replace(/,\s*$/, '');
-                if (!clean.endsWith(']')) clean += ']';
-            }
-            return clean;
-        };
-
         try {
-            const repairedText = repairJSON(text);
-            rawItems = JSON.parse(repairedText);
+            rawItems = JSON.parse(text);
             if (!Array.isArray(rawItems)) {
                 console.warn(`[AI PIPELINE] Response is not an array, wrapping...`);
                 rawItems = [rawItems];
             }
         } catch (parseErr) {
-            console.error(`[AI PIPELINE] JSON parse failed after repair. Attempting regex recovery...`);
+            console.error(`[AI PIPELINE] JSON parse failed. Attempting recovery...`);
             // Try to extract JSON array from response text
             const arrayMatch = text.match(/\[[\s\S]*\]/);
             if (arrayMatch) {
@@ -194,7 +175,7 @@ export const processLeaseClientSide = async (lease: Lease, files: File[]): Promi
                     console.log(`[AI PIPELINE] Recovery succeeded: extracted ${rawItems.length} items`);
                 } catch {
                     console.error(`[AI PIPELINE] Recovery failed. Raw text:`, text.substring(0, 500));
-                    throw new Error('Failed to parse AI response as JSON (Truncated or Invalid Format)');
+                    throw new Error('Failed to parse AI response as JSON');
                 }
             } else {
                 throw new Error('AI response does not contain a JSON array');
