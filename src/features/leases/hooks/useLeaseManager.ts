@@ -159,18 +159,19 @@ export const useLeaseManager = (currentUser: User | null, isAuthLoading: boolean
             console.error('[PIPELINE ERROR] [processLeaseWithAI] Exception caught:', error);
 
             // Retry only once (avoid sending the same large PDF 3 times)
-            if (retryAttempt < 1) {
+            if (retryAttempt < 1 && isTransientError(error)) {
                 console.warn(`[PIPELINE TRACE] Retrying (attempt ${retryAttempt + 1}/1) for leaseId=${leaseToProcess.id}`);
                 await new Promise(r => setTimeout(r, 3000));
                 return processLeaseWithAI(leaseToProcess, files, retryAttempt + 1);
             }
 
             // All retries exhausted — marking as failed deterministically
+            const errorMsg = error?.message || 'Unknown error';
             console.error('[PIPELINE ERROR] Client-side retries exhausted for leaseId:', leaseToProcess.id);
-            setNotification({ type: 'error', message: 'Processing permanently failed after retries.' });
+            setNotification({ type: 'error', message: `Processing failed: ${errorMsg}` });
             
             // Critical fix: Ensure lease does not become stuck in "Processing" UI state
-            setLeases(prev => prev.map(l => l.id === leaseToProcess.id ? { ...l, status: LeaseStatus.FAILED } : l));
+            setLeases(prev => prev.map(l => l.id === leaseToProcess.id ? { ...l, status: LeaseStatus.FAILED, reviewerNotes: errorMsg } : l));
             await markLeaseFailedWorkflow(leaseToProcess.id).catch(e => console.error('[PIPELINE ERROR] DB fallback failed:', e));
         }
     }, [currentUser]);
@@ -362,8 +363,8 @@ export const useLeaseManager = (currentUser: User | null, isAuthLoading: boolean
             if (!uploadedFiles || uploadedFiles.length === 0) {
                 console.error('[PIPELINE ERROR] All uploads failed for lease:', createdLease.id);
                 await markLeaseFailedWorkflow(createdLease.id).catch(console.error);
-                setLeases(prev => prev.map(l => l.id === createdLease.id ? { ...l, status: LeaseStatus.FAILED } : l));
-                setNotification({ type: 'error', message: 'Lease created but all document uploads failed.' });
+                setLeases(prev => prev.map(l => l.id === createdLease.id ? { ...l, status: LeaseStatus.FAILED, reviewerNotes: 'Upload to storage failed. File might be too large (>50MB) or network error.' } : l));
+                setNotification({ type: 'error', message: `Storage upload failed for ${files[0]?.name || 'document'}.` });
                 return createdLease;
             }
 
